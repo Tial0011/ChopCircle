@@ -20,6 +20,7 @@ import {
   startAfter,
   serverTimestamp,
   increment,
+  onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { createNotification } from "../notifications/notificationService.js";
 
@@ -89,6 +90,36 @@ export async function hasUserLiked(parentType, parentId, uid) {
 }
 
 /**
+ * Live-subscribes to one post's own doc — its denormalized `likeCount`/
+ * `commentCount`/`shareCount` — so a post card reflects OTHER users'
+ * likes/comments without a page refresh. NOTE: toggleLikePost()'s write
+ * goes through runTransaction(), which (unlike a plain updateDoc()) does
+ * NOT get Firestore's local-cache optimistic echo — a listener here only
+ * fires once the server confirms. That's fine for seeing other people's
+ * likes land, but postCard.js gates rendering THIS callback's likeCount
+ * while its own toggle is in flight, to avoid a stale value from this
+ * listener visibly overwriting the immediate optimistic update on your
+ * own tap and then "correcting" a moment later.
+ * @returns {() => void} unsubscribe
+ */
+export function listenPost(postId, callback) {
+  return onSnapshot(doc(db, POSTS, postId), (snap) => {
+    if (snap.exists()) callback({ id: snap.id, ...snap.data() });
+  });
+}
+
+/**
+ * Live-subscribes to whether `uid` currently likes this post — keeps the
+ * heart icon in sync if the same account likes/unlikes this post from
+ * another tab or device. Same "gate while your own toggle is pending"
+ * caveat as listenPost() above, for the same reason.
+ * @returns {() => void} unsubscribe
+ */
+export function listenUserLikedPost(postId, uid, callback) {
+  return onSnapshot(doc(db, LIKES, likeDocId(uid, "post", postId)), (snap) => callback(snap.exists()));
+}
+
+/**
  * Likes or unlikes a post on behalf of `uid`, keeping `likeCount` in sync
  * via a transaction — the exact pattern proven in recipeService.js's
  * toggleLikeRecipe(), reused here per the Phase 5 handoff note.
@@ -134,7 +165,10 @@ export async function toggleLikePost(postId, uid) {
 
 /**
  * Lists comments for a recipe or a post, oldest first, matching the
- * `parentType ASC, parentId ASC, createdAt ASC` composite index.
+ * `parentType ASC, parentId ASC, createdAt ASC` composite index. One-time
+ * fetch — kept for any future non-live use case; postCard.js's comment
+ * panel uses listenComments() below instead so new comments from other
+ * users appear without reopening the panel.
  */
 export async function listComments(parentType, parentId) {
   const snap = await getDocs(
@@ -146,6 +180,24 @@ export async function listComments(parentType, parentId) {
     )
   );
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+/**
+ * Live-subscribes to a post/recipe's comments, oldest first. addComment()
+ * writes via a plain addDoc()+updateDoc() (not a transaction), so unlike
+ * the like listeners above, this one DOES get Firestore's local-cache
+ * optimistic echo — your own new comment appears instantly, no gating
+ * needed.
+ * @returns {() => void} unsubscribe
+ */
+export function listenComments(parentType, parentId, callback) {
+  const q = query(
+    collection(db, COMMENTS),
+    where("parentType", "==", parentType),
+    where("parentId", "==", parentId),
+    orderBy("createdAt", "asc")
+  );
+  return onSnapshot(q, (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }))));
 }
 
 /**

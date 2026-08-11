@@ -18,6 +18,7 @@ const imageInput = $("#post-image-url");
 
 let currentUser = null;
 let cursor = null;
+let cardCleanups = []; // unsubscribe fns from initPostCard() — cleared before any non-append re-render
 
 function goToLogin() {
   window.location.href = `login.html?redirect=${encodeURIComponent(window.location.pathname)}`;
@@ -25,7 +26,7 @@ function goToLogin() {
 
 function wireCard(post) {
   const cardEl = feedList.querySelector(`[data-post-id="${post.id}"]`);
-  initPostCard(cardEl, post, currentUser, goToLogin);
+  cardCleanups.push(initPostCard(cardEl, post, currentUser, goToLogin));
 }
 
 function renderPosts(posts, { append = false } = {}) {
@@ -33,6 +34,8 @@ function renderPosts(posts, { append = false } = {}) {
   if (append) {
     feedList.insertAdjacentHTML("beforeend", html);
   } else {
+    cardCleanups.forEach((cleanup) => cleanup()); // stop any listeners on cards we're about to discard
+    cardCleanups = [];
     feedList.innerHTML = html;
   }
   posts.forEach(wireCard);
