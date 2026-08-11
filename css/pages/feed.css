@@ -39,6 +39,28 @@
 }
 .composer-logged-out p { margin: 0; }
 
+/* ---- Live "new posts" banner ---- */
+.feed-new-posts-banner {
+  display: block;
+  width: 100%;
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--brand-primary);
+  color: var(--text-on-brand);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  animation: feed-banner-in var(--duration-slow) var(--ease-out);
+}
+.feed-new-posts-banner:hover { background: var(--brand-primary-hover); }
+@keyframes feed-banner-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ---- Feed list ---- */
 .feed-list { display: flex; flex-direction: column; gap: var(--space-5); }
 

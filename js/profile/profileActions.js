@@ -50,7 +50,10 @@ export function initProfileActions({ currentUser, profileId, followBtn, messageL
       try {
         const nowFollowing = await toggleFollow(currentUser.uid, profileId);
         updateFollowBtnUI(nowFollowing);
-        followerCountEl.textContent = Number(followerCountEl.textContent) + (nowFollowing ? 1 : -1);
+        // followerCountEl itself is kept in sync by profile-page.js's
+        // listenProfile() live listener now, not by a manual increment
+        // here — see profileService.js's listenProfile() doc comment for
+        // why (avoids racing the transaction's own confirmed write).
       } catch (error) {
         console.error("Failed to toggle follow:", error);
       } finally {

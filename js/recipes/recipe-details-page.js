@@ -12,6 +12,8 @@ import {
   deleteRecipe,
   hasUserLikedRecipe,
   toggleLikeRecipe,
+  listenRecipe,
+  listenUserLikedRecipe,
   categoryName,
 } from "./recipeService.js";
 
@@ -122,7 +124,40 @@ async function init() {
   await updateLikeUI(recipe, currentUser);
   wireOwnerActions(recipe, currentUser);
 
+  // Real-time pass: keep the like count and heart state live for everyone
+  // viewing this recipe, not just the person who clicked — same pattern as
+  // the feed's postCard.js. `likePending` gates the live listeners' DOM
+  // writes while this tab's own click is still in flight, so the
+  // optimistic update below doesn't get briefly overwritten by a stale
+  // snapshot before the real transaction result arrives (see
+  // recipeService.js's listenRecipe()/listenUserLikedRecipe() doc comments).
   let likePending = false;
+  let latestLikeCount = recipe.likeCount;
+  let latestLiked = likeBtn.getAttribute("aria-pressed") === "true";
+
+  function paintLike() {
+    if (likePending) return;
+    likeCountEl.textContent = latestLikeCount;
+    likeBtn.setAttribute("aria-pressed", String(latestLiked));
+    likeBtn.firstChild.textContent = latestLiked ? "❤️ " : "🤍 ";
+  }
+
+  const unsubRecipe = listenRecipe(recipeId, (live) => {
+    latestLikeCount = live.likeCount;
+    paintLike();
+  });
+  let unsubLiked = null;
+  if (currentUser) {
+    unsubLiked = listenUserLikedRecipe(recipeId, currentUser.uid, (liked) => {
+      latestLiked = liked;
+      paintLike();
+    });
+  }
+  window.addEventListener("beforeunload", () => {
+    unsubRecipe();
+    if (unsubLiked) unsubLiked();
+  });
+
   likeBtn.addEventListener("click", async () => {
     if (!auth.currentUser) {
       window.location.href = `login.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
@@ -151,6 +186,7 @@ async function init() {
       likeCountEl.textContent = countBeforeClick;
     } finally {
       likePending = false;
+      paintLike(); // repaint from whatever the listeners last received while we were gated
     }
   });
 

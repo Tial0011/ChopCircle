@@ -113,8 +113,21 @@
               <textarea id="post-caption" rows="3" placeholder="What are you cooking today?" required></textarea>
             </div>
             <div class="field">
-              <label for="post-image-url" class="sr-only">Image URL (optional)</label>
-              <input type="url" id="post-image-url" placeholder="Paste an image URL (optional)" />
+              <label id="post-image-label" class="sr-only">Photo (optional)</label>
+              <div class="image-upload image-upload--cover" id="post-image-upload">
+                <input type="file" accept="image/*" hidden aria-labelledby="post-image-label" />
+                <div class="image-upload__dropzone" tabindex="0" role="button" aria-label="Add a photo to your post">
+                  <img class="image-upload__preview hidden" alt="" />
+                  <div class="image-upload__prompt">
+                    <span class="image-upload__prompt-icon" aria-hidden="true">📷</span>
+                    <span class="image-upload__prompt-label">Add a photo (optional)</span>
+                    <span class="image-upload__prompt-hint">Click or drag a JPG, PNG, WebP, or GIF — up to 8MB</span>
+                  </div>
+                  <div class="image-upload__progress hidden"><div></div></div>
+                </div>
+                <button type="button" class="image-upload__remove hidden" aria-label="Remove photo">✕</button>
+              </div>
+              <div class="field__error" id="post-image-error" role="alert"></div>
             </div>
             <div class="composer__actions">
               <button type="submit" class="btn btn--primary">Post</button>
@@ -125,6 +138,10 @@
             <p>Log in to share what you're cooking with your circle.</p>
             <a href="login.html?redirect=%2Fpages%2Ffeed.html" class="btn btn--primary">Log in</a>
           </div>
+
+          <button type="button" class="feed-new-posts-banner hidden" id="feed-new-posts-banner">
+            ↑ New posts — tap to see them
+          </button>
 
           <div class="feed-list" id="feed-list" aria-live="polite">
             <!-- Populated by js/feed/feed-page.js. Skeleton cards render first paint. -->

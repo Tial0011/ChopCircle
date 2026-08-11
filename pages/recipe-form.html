@@ -99,9 +99,20 @@
           </div>
 
           <div class="field">
-            <label for="coverImageURL">Cover image URL</label>
-            <input type="url" id="coverImageURL" name="coverImageURL" placeholder="https://…" required />
-            <div class="field__hint">Photo uploads aren't wired up yet — paste an image link for now.</div>
+            <label id="coverImageURL-label">Cover photo</label>
+            <div class="image-upload image-upload--cover" id="coverImageURL-upload">
+              <input type="file" accept="image/*" hidden aria-labelledby="coverImageURL-label" />
+              <div class="image-upload__dropzone" tabindex="0" role="button" aria-label="Choose a cover photo">
+                <img class="image-upload__preview hidden" alt="" />
+                <div class="image-upload__prompt">
+                  <span class="image-upload__prompt-icon" aria-hidden="true">📷</span>
+                  <span class="image-upload__prompt-label">Add a cover photo</span>
+                  <span class="image-upload__prompt-hint">Click or drag a JPG, PNG, WebP, or GIF — up to 8MB</span>
+                </div>
+                <div class="image-upload__progress hidden"><div></div></div>
+              </div>
+              <button type="button" class="image-upload__remove hidden" aria-label="Remove photo">✕</button>
+            </div>
             <div class="field__error" id="coverImageURL-error" role="alert"></div>
           </div>
 

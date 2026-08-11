@@ -32,6 +32,19 @@ Denormalized counters (likeCount, commentCount, followerCount) on parent docs,
 kept in sync via batched writes / Cloud Functions triggers (future) so feed
 queries never require aggregation reads.
 
+Real-time (`onSnapshot`) is used for anything another user's action should
+update live without a refresh: chats, notifications, and (as of the Phase
+11 testing pass) feed post likes/comments/shares. One caveat that matters
+if this pattern gets extended further: Firestore's local-cache "instant
+echo" for your own writes only applies to plain `set`/`update`/`addDoc`
+calls — a write made inside `runTransaction()` (used for both
+`toggleLikePost()` and `toggleLikeRecipe()`, to keep counters accurate
+under concurrent likes) does NOT get that echo, so a live listener on the
+same document only reflects it once the server confirms. Both toggle
+functions' callers handle this with a manual optimistic UI update gated
+behind a pending-flag, rather than trusting the listener alone — see
+`js/feed/postCard.js`'s header comment for the full reasoning.
+
 ## Phase status
 | Phase | Status |
 |---|---|
@@ -45,7 +58,7 @@ queries never require aggregation reads.
 | 8. Chat | ✅ Done |
 | 9. PWA (installability + manual setup checklist) | ✅ Done |
 | 10. Notifications | ✅ Done |
-| 11. Testing | ⏳ Not started — see `TESTING_PHASE_SETUP.md` for the manual setup this phase needs first |
+| 11. Testing | 🚧 In progress — deployed on Netlify, real users/data flowing; several bugs found and fixed live (see HANDOFF.md). `forgot-password.html` is the one known 404 still outstanding. |
 | 12. Optimization | ⏳ Not started |
 
 Cross-cutting passes (not tied to one phase number, applied opportunistically

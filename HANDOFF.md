@@ -2,218 +2,223 @@
 PROJECT HANDOFF SUMMARY
 ==========================
 
-Current Phase: 10 (Notifications) — COMPLETE. Phase 11 (Testing) is next
-and is blocked on manual setup a human has to do outside this repo — see
-TESTING_PHASE_SETUP.md, which is now the entry point for that phase.
+Current Phase: 11 (Testing) — IN PROGRESS. The app is deployed and live
+(Netlify, not Firebase Hosting — see README.md's "Hosting" section) and
+has been getting real hands-on testing this session, which surfaced and
+fixed several real bugs. This is no longer a "set up and wait" phase —
+treat future sessions as active bug-fixing against a live deployment.
 
 ==========================
-WHAT SHIPPED THIS SESSION (finishing Phase 10)
+DEPLOYMENT — WHAT'S ACTUALLY LIVE
 ==========================
 
-Picked up from the previous session's partial handoff (data layer +
-header controller were already done) and completed PENDING steps 1-5:
-
-1. firebase/firestore-schema.md — updated BEFORE anything else, per the
-   previous handoff's instruction. `notifications/{notificationId}` now
-   documents `actorName`, `actorPhotoURL`, `targetPreview`, and the
-   widened `targetType` enum (added `"user"` for follow notifications).
-   `chats/{chatId}` now documents `lastMessageStatus`.
-
-2. css/components/header-auth.css — NEW. Avatar button + image, notif-bell
-   icon button, the notif-bell-wrap `.badge` (small circular unread
-   count, positioned absolute top-right of the bell), a shared
-   `.dropdown-panel` shell used by both `#notif-dropdown` and
-   `#account-dropdown`, `.notif-item`/`.notif-item--unread`/
-   `.notif-item__dot` row styling (mirrors `.chat-list__item`'s
-   avatar + two-line layout), `.messages-badge` (small dot on the
-   Messages nav link), and `.mobile-account-links` (the plain-link-list
-   style for the mobile drawer's auth-user block — see the design
-   decision below). Added `--z-dropdown: 300` to css/base/tokens.css
-   (between `--z-header` and `--z-modal`, same "claim an unclaimed
-   token" move `--z-toast` used in Phase 9) and a `.text-xs` utility to
-   css/base/typography.css (was referenced by notificationItem.js but
-   didn't exist — real gap, not a Phase 10 addition, fixed while in
-   the area). Both files' imports added to css/style.css.
-
-3. pages/notifications.html + js/notifications/notifications-page.js —
-   NEW. Full-history equivalent of the bell dropdown: requireAuth(),
-   listenNotifications() for the full 30, markAllRead() on load, empty
-   state, rendered via the SAME notificationItemHTML() the bell dropdown
-   uses so the two surfaces can't drift. css/pages/notifications.css is
-   small — mostly a `.container` + `.card` wrapper around the shared
-   `.notif-item` rows. Deliberately NOT added to service-worker.js's
-   SHELL_ASSETS, matching the existing "only the home page shell is
-   precached" decision from Phase 9.
-
-4. HTML markup — added the `#auth-guest`/`#auth-user` blocks to all 8
-   pages with a `.site-header` (index.html, pages/feed.html,
-   pages/recipes.html, pages/recipe-details.html, pages/recipe-form.html,
-   pages/profile.html, pages/profile-edit.html, pages/chat.html), in
-   both `.header-actions` (desktop) and `.mobile-drawer__actions`
-   (mobile — recipe-form.html and profile-edit.html didn't have this div
-   at all before, it was added). `.messages-badge` spans added to every
-   existing "Messages" nav link, in both nav-links and
-   mobile-drawer__links, on the 6 pages that have one (index, chat, feed,
-   profile, recipe-details, recipes) — skipped on profile-edit/
-   recipe-form, which don't link to Messages at all.
-
-   DESIGN DECISION (the one open call flagged in the previous handoff):
-   the notif bell + avatar dropdown are DESKTOP-ONLY — `#notif-bell`,
-   `#avatar-btn`, `#notif-dropdown`, `#account-dropdown` etc. exist once
-   per page, in `.header-actions` only. The mobile drawer's `.auth-user`
-   block is a plain link list instead (`.mobile-account-links`: "My
-   profile" / "Notifications" / "Log out", no dropdown, no bell/badge
-   duplication) — this was the path of least resistance the previous
-   session's header.js already assumed (its `$()` calls all target
-   single IDs), and it avoids ID collisions between a desktop dropdown
-   and a mobile drawer copy of the same widget.
-
-5. js/utils/header.js — extended (not rewritten) to support #4's design
-   decision. `wireAvatarMenu()` no longer owns profile-link-href-setting
-   or logout-button-wiring directly — those moved to two new
-   page-independent functions, `wireAccountProfileLinks()` and
-   `wireLogoutButtons()`, which use `$$(".account-profile-link")` /
-   `$$(".logout-btn")` (class-based, same plural reasoning as the
-   existing guest/user swap) so BOTH the desktop dropdown's link/button
-   AND the mobile drawer's plain-list link/button get wired from one
-   call, without duplicate IDs. `initAuthHeader()` now calls both
-   unconditionally (for any signed-in user, mobile or desktop), then
-   `wireAvatarMenu()`/`wireNotifications()` still run to wire the
-   desktop-only dropdown behavior when those elements exist.
-
-   Page-controller wiring: `initAuthHeader(user, { basePath })` called
-   from every controller right after its existing getCurrentUser()/
-   requireAuth() call — js/app.js and js/recipes/recipes-page.js didn't
-   call getCurrentUser() at all before this session; that call was added
-   to both. All 8 pages plus the new notifications-page.js are wired.
-
-6. service-worker.js — the Phase 9 comment speculating Phase 10 "will
-   likely add a push/notificationclick handler" was updated to state the
-   actual decision made last session: real web push needs a backend
-   (VAPID keys + FCM send calls) this app doesn't have, so in-app
-   notifications (bell/badge/page, all live via onSnapshot) ship the
-   value without that dependency. Now points at /functions and
-   TESTING_PHASE_SETUP.md instead of framing it as still-undecided.
+- Hosted on **Netlify**, connected to a **GitHub** repo, auto-deploying on
+  push to main. Custom domain layered on top of the netlify.app subdomain.
+  `firebase.json`'s `hosting` block (written for Firebase Hosting) is
+  unused but harmless — left in place rather than removed, in case Netlify
+  is ever swapped back out.
+- Firebase project in use is an **existing project that predates
+  ChopCircle** (its name suggests it may be used for something unrelated,
+  possibly named after "MBBS Financial"), reused rather than created
+  fresh, because project creation was having trouble on the user's end.
+  This is flagged, not resolved — see README.md's "Caution on the Firebase
+  project in use" section for the two specific risks (rules possibly
+  overwritten, collection-name collisions) and confirm with the user
+  before this goes further into testing if it hasn't come up again.
+- Auth (Email/Password + Google), Firestore, and Storage are all enabled
+  and rules are deployed (pasted directly into the console's rules editor,
+  not via CLI — so remember local `firebase/*.rules` and the live rules
+  can drift if one gets edited without the other going forward).
+- Composite indexes were deliberately NOT pre-created — the user chose to
+  let Firestore's own error links create them on demand as real queries
+  hit them during testing, rather than front-loading all 7 from
+  TESTING_PHASE_SETUP.md §4. None have come up as broken yet; if a
+  "the query requires an index" error surfaces, that table is still the
+  reference for which fields/order to expect.
+- `categories` collection: seeding status wasn't re-confirmed this
+  session — if the home page's category chips or the recipe form's
+  category dropdown render empty, that's the first thing to check.
 
 ==========================
-NEW THIS SESSION, BEYOND THE PHASE 10 HANDOFF — FUNCTIONS + PROJECT WIRING
+BUGS FOUND DURING TESTING THIS SESSION, AND FIXES SHIPPED
 ==========================
 
-Two things the user asked for that weren't part of the Phase 10 handoff:
+1. **`Failed to resolve module specifier "firebase/app"`** — the
+   browser couldn't load the app at all. Root cause: `firebase/
+   firebase-config.js` had been overwritten with the Firebase console's
+   default npm/bundler-style snippet (`import { initializeApp } from
+   "firebase/app"`), which needs a bundler this project doesn't have —
+   AND it was actually a copy-paste of the wrong project's config
+   entirely (the pre-existing project's original snippet, mixing in a
+   `databaseURL` and `measurementId` this project doesn't use). Fixed by
+   reducing the file back down to just the plain `export const
+   firebaseConfig = { ... }` object with the six fields this app
+   actually reads (`js/firebase/firebase-init.js` is the only file that
+   imports it and calls `initializeApp()`). Documented as a "watch for
+   this" pitfall in README.md's Getting Started, since the Firebase
+   console's default copy button produces the broken snippet, not the
+   working one.
 
-- functions/ — NEW folder, a Cloud Functions scaffold for the Phase 11+
-  backend move already documented as the plan in firestore-schema.md and
-  firestore.rules ("counters updated client-side for now — Cloud
-  Functions once traffic justifies it"). package.json + index.js +
-  README.md + .gitignore. Every function in index.js is written but
-  commented out (not exported) — turning one on while its client-side
-  equivalent (in js/*Service.js) is still active would double-count.
-  index.js has one worked example each for: counter maintenance (recipe
-  like counts), server-side notification creation (follow notifications),
-  and account deletion (referenced by firestore.rules' `users/{uid}`
-  delete-rule comment but never implemented — left commented out because
-  it's incomplete, not because of double-firing: no cascade-delete of the
-  account's recipes/posts/comments/likes/follows/chats yet). See
-  functions/README.md for the turn-it-on checklist.
+2. **`pages/verify-email.html` 404'd mid-signup** — signup.js redirects
+   here after `sendEmailVerification()`, but the page never existed (it
+   was on TESTING_PHASE_SETUP.md's "known gaps" list as a someday-item,
+   then became a live-breaking bug once real signups were being tested).
+   Built pages/verify-email.html + js/auth/verify-email-page.js:
+   shows "check your inbox", an "I've verified — continue" button that
+   calls `user.reload()` (Firebase doesn't push emailVerified changes to
+   an open tab — this is the only way to pick up the change without the
+   user leaving and coming back), a resend button with a 60s soft
+   cooldown, and a logout-and-restart link. Redirects to feed.html
+   automatically via onAuthStateChanged if the user is already verified
+   on page load (e.g., they verified, closed the tab, came back later).
+   `pages/forgot-password.html` is the other 404 on that same "known
+   gaps" list — still not built, still just a future gap for now, not
+   yet hit live the way verify-email was.
 
-- firebase.json + .firebaserc — NEW, root of the repo. Didn't exist
-  before this session despite README.md's existing "firebase deploy
-  --only firestore:rules,storage:rules" instructions implying they
-  should. `firebase.json` wires hosting (serves the repo root, ignoring
-  doc/config files), firestore/storage rules paths, and the functions/
-  folder. `.firebaserc` has a placeholder project ID to fill in.
-  IMPORTANT: hosting has NO rewrite rules — this is a multi-page site
-  (pages/*.html), not a client-side-routed SPA, so a catch-all rewrite to
-  index.html would have broken direct navigation to every other page.
-  Deliberately left out rather than copied from a SPA template.
-
-- TESTING_PHASE_SETUP.md — NEW, root of the repo. The consolidated
-  "everything a human needs to do outside this repo before/during
-  testing" checklist the user asked for: Firebase project creation,
-  enabling Auth/Firestore/Storage, filling in firebase-config.js and
-  .firebaserc, deploying rules, creating the 7 composite indexes (table
-  form, sourced from HANDOFF's running list, cross-checked against
-  firestore-schema.md), seeding the categories collection (blocked by
-  firestore.rules' `allow write: if false` on purpose — needs console or
-  a future admin Cloud Function), serving/deploying hosting, and an
-  explicitly-optional Functions section pointing at functions/README.md.
-  Also lists the known non-setup gaps (verify-email.html/
-  forgot-password.html still 404, image uploads still URL-only, no
-  manifest screenshots, no update-available UI) so they don't look like
-  bugs during testing. MANUAL_SETUP.md (Phase 9's PWA-specific checklist)
-  now points to this file at the top rather than duplicating it;
-  README.md's project-structure section and file tree updated to list
-  both new root files plus functions/.
+3. **Repeated `FAILED_PRECONDITION` / `400` errors piling up on post
+   likes** — `js/feed/postCard.js`'s like button had NO guard against
+   rapid/double clicks (unlike the recipe page's like button, which
+   already had one). Each click fired a fresh `toggleLikePost()`
+   transaction immediately, so fast clicking raced several transactions
+   against the same document, each invalidating the next's read version.
+   Fixed with a `likePending` flag that ignores clicks while one is in
+   flight. First pass used `likeBtn.disabled = true` during the wait
+   (matching the recipe page's existing pattern) — the user pushed back
+   that waiting on a full transaction round-trip before showing any
+   change would feel laggy, which was a fair critique of the EXISTING
+   recipe-page pattern too, not just the new fix. Both like buttons
+   (postCard.js AND recipe-details-page.js) were then rewritten to
+   optimistic-update: flip the icon/count instantly on click, let the
+   transaction resolve underneath, roll back only if it actually fails.
 
 ==========================
-DELIBERATELY OUT OF SCOPE (carried over from previous session, still true)
+REAL-TIME PASS (feed likes/comments/shares) — THIS SESSION
+==========================
+
+User asked to make likes/comments/shares update live for everyone
+watching, not just the person who clicked. Added to feedService.js:
+
+- `listenPost(postId, callback)` — live post doc (likeCount/commentCount/
+  shareCount).
+- `listenUserLikedPost(postId, uid, callback)` — live liked/unliked state
+  for one user (syncs the heart icon across tabs/devices).
+- `listenComments(parentType, parentId, callback)` — live comment list,
+  replacing the one-time `listComments()` fetch as postCard.js's comment
+  panel's data source (`listComments()` itself was kept, unused now, in
+  case a future non-live use case wants it — see its own updated
+  doc-comment).
+
+All three follow the exact `listenX(id, callback) → unsubscribe`
+convention chatService.js's `listenMessages()`/`listenUserChats()` and
+notificationService.js's `listenNotifications()` already established —
+no new convention introduced.
+
+**The one real subtlety, worth understanding before touching this again:**
+Firestore's local cache gives an INSTANT echo of your own writes to any
+listener on the same document — but only for plain `set()`/`update()`/
+`addDoc()` calls, NOT for writes made inside `runTransaction()`. Both
+`toggleLikePost()` and `toggleLikeRecipe()` use a transaction (to keep
+`likeCount` accurate under concurrent likes), so `listenPost()`/
+`listenUserLikedPost()` only reflect YOUR OWN like/unlike once the server
+actually confirms it — same round-trip delay as before, just now also
+visible to a live listener. Left un-gated, this would flicker: the manual
+optimistic update flips the icon, then a moment later a stale snapshot
+event (still showing the pre-write state) briefly flips it back, then the
+real update corrects it again. postCard.js's `likePending` flag now gates
+BOTH the manual optimistic update's own click handler AND the live
+listener's rendering — the listener still tracks the latest server value
+in a variable the whole time, it just doesn't paint the DOM with it until
+`likePending` clears, at which point it repaints from whatever the most
+recent value actually was (so it's still eventually consistent, just
+without the visible flicker). `addComment()` uses a plain write, so
+`listenComments()` needed no such gating — new comments (including your
+own) render instantly.
+
+`feed-page.js` changed too: `initPostCard()` now returns a `cleanup()`
+function (unsubscribes all 2-3 listeners a card started). `feed-page.js`
+tracks these in a `cardCleanups` array and calls them before any non-
+append re-render of the feed list — not a scenario the app currently
+triggers (pagination only ever appends), but correct now instead of
+silently leaking listeners on removed DOM nodes if a refresh feature is
+ever added.
+
+**Share button still does nothing** — `shareCount` is now wired to
+display live (via `listenPost()`), matching like/comment, but nothing in
+the app increments it. This was a known gap before this session
+(`postCard.js`'s share button has never been functional) and remains one
+— the real-time wiring is just "ready" for whenever that gets built.
+
+==========================
+DELIBERATELY OUT OF SCOPE (carried over, still true)
 ==========================
 
 - Real web push notifications — see service-worker.js's comment and
-  functions/README.md. Revisit once/if a Cloud Functions backend exists.
-- Share notifications (schema's `type` enum includes "share") — the
-  post-card share button has never been wired to do anything.
-- Comment/reply notifications on RECIPES — recipe-details.html has no
-  comment UI at all; all comment/reply notifications only ever fire with
-  targetType "post" as a result. Not a bug, just a ceiling.
+  functions/README.md.
+- Share button functionality (see above).
+- Comment/reply notifications on RECIPES — recipe-details.html still has
+  no comment UI.
 
 ==========================
-COMPOSITE INDEXES REQUIRED
+PENDING — FULL LIST
 ==========================
-Unchanged from previous sessions — nothing this session added a new one.
-Full table (with field order) now lives in TESTING_PHASE_SETUP.md §4
-rather than duplicated here; firestore-schema.md's "Indexes to create"
-section is the other copy, kept in sync with that table.
-
-==========================
-PENDING — FULL LIST (unchanged from earlier phases, still true)
-==========================
-- pages/verify-email.html and pages/forgot-password.html — still not
-  built, still linked from the auth pages, still 404 today.
-- Image uploads still not wired anywhere in the app (recipe/post/profile
-  photo fields all take a URL, not a file picker — storage.rules already
-  has rules ready for this).
-- Marketing/conversion copy pass on index.html — still NOT started.
-- No `screenshots` array in manifest.json (needs a real browser/device).
+- **`pages/forgot-password.html`** — still not built, still linked from
+  login.html, not yet hit live (verify-email.html was the same kind of
+  gap and became urgent the moment real signups happened — this one will
+  likely do the same the first time someone tests password reset).
+- Image uploads still not wired anywhere (recipe/post/profile photo
+  fields all take a URL, not a file picker).
+- Marketing/conversion copy pass on index.html — still not started.
+- No `screenshots` array in manifest.json.
 - No "update available" UI for the service worker.
-- functions/ is a scaffold only — nothing in it is deployed, and the app
-  works fully without it (all counters/notifications are client-side).
+- functions/ is still a scaffold only, nothing deployed.
+- Confirm the Firebase-project-reuse risk from the Deployment section
+  above with the user if it hasn't come up again.
+- Composite indexes: watch for "the query requires an index" errors as
+  more of the app gets exercised (recipe filtering, chat list, comments)
+  — the reference table is TESTING_PHASE_SETUP.md §4.
 
 ==========================
 CODING STANDARDS FOLLOWED (unchanged, kept consistent)
 ==========================
-- ES Modules throughout, async/await, one concern per file, no file over
-  ~150 lines. header.js grew slightly this session (new
-  wireAccountProfileLinks()/wireLogoutButtons() functions) but stayed
-  under the guideline — if Phase 11 testing surfaces a need for more
-  page-specific header logic, split it out rather than growing this file
-  further, per the previous session's note.
-- Notification-raising code still lives in the *Service.js file that owns
-  the triggering collection, never the reverse — unchanged, nothing this
-  session touched that boundary.
-- All colors/spacing/type in new CSS (header-auth.css, notifications.css)
-  reference css/base/tokens.css custom properties — no hardcoded hex/px
-  values, continuing the existing rule.
+- ES Modules throughout, async/await, one concern per file.
+  feedService.js and postCard.js both grew this session (3 new listener
+  functions; postCard.js's like/comment logic got notably more detailed
+  for the optimistic-update + gating behavior) — still each under the
+  ~150-line guideline, but postCard.js in particular is now dense enough
+  that if it grows further, splitting the like-button logic into its own
+  small module is worth considering rather than growing this file more.
+- `listenX(id, callback) → unsubscribe` convention (from chatService.js/
+  notificationService.js) extended into feedService.js rather than
+  inventing a new shape.
+- All colors/spacing/type in any CSS touched this session already used
+  css/base/tokens.css custom properties — nothing new needed.
 
 ==========================
 IMPORTANT NOTES FOR THE NEXT CLAUDE INSTANCE
 ==========================
-- Phase 10 is done. Do not re-open it unless the user reports a specific
-  bug — HANDOFF.md's job now is Phase 11 (Testing), which starts with a
-  human working through TESTING_PHASE_SETUP.md, not more code changes.
-- If asked to "start testing," the honest first move is confirming with
-  the user whether TESTING_PHASE_SETUP.md's steps 1-5 (Firebase project,
-  config, rules, indexes, seeded categories) are actually done yet — the
-  app will fail in ways that look like bugs (empty category chips, every
-  Firestore query throwing a console error with an index-creation link,
-  Google sign-in erroring) if they aren't, and that's setup, not a code
-  regression to chase.
-- If asked to move a counter or a notification server-side, start from
-  functions/README.md's checklist — the double-counting trap (client AND
-  server both incrementing) is the one mistake to actively avoid there.
+- This app is LIVE. Bugs reported from here forward are real users (or
+  the user themself testing) hitting real broken behavior in production,
+  not hypothetical edge cases — treat reports with that urgency, and
+  don't assume something is "future testing-phase work" if it's actually
+  actively blocking someone right now (verify-email.html is the textbook
+  example from this session: it was correctly deprioritized in
+  TESTING_PHASE_SETUP.md, then became urgent the moment it was actually
+  hit).
+- When debugging a live report, ask for the browser console output AND,
+  for anything involving a failed network request, the actual response
+  body (Network tab → click the failed request → Response/Preview) —
+  the console stack trace alone often only shows THAT something failed,
+  not the server's actual reason why (this is exactly how the
+  FAILED_PRECONDITION root cause was found this session).
+- If asked to extend the real-time pattern to another part of the app
+  (recipes, chat reactions, whatever comes next), read this file's
+  "REAL-TIME PASS" section first — the transaction-vs-plain-write local-
+  echo distinction is easy to miss and produces a real, user-visible
+  flicker bug if skipped.
 - Continue using this same HANDOFF.md format at the end of your session.
 
-Continue from: TESTING_PHASE_SETUP.md, starting at §1 (Create the
-Firebase project) — this is a human-in-the-loop phase, not a
-Claude-alone one; the next session's job is mostly supporting whoever
-works through that checklist, not writing more app code.
+Continue from: whatever the user reports next from live testing. If
+nothing's actively broken, the next planned items are
+`pages/forgot-password.html` (same shape of gap as verify-email.html —
+build it proactively before it's hit) and confirming the Firebase-
+project-reuse question above.

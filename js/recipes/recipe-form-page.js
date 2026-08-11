@@ -7,6 +7,7 @@ import { initAuthHeader } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { isNonEmpty } from "../utils/validation.js";
 import { requireAuth } from "../auth/authGuard.js";
+import { initImageUploadField } from "../utils/imageUpload.js";
 import { CATEGORIES, getRecipe, createRecipe, updateRecipe } from "./recipeService.js";
 
 const form = $("#recipe-form");
@@ -18,6 +19,7 @@ const categorySelect = $("#category");
 const editId = new URLSearchParams(window.location.search).get("id");
 let rowSeq = 0;
 const nextRowId = () => `row${++rowSeq}`;
+let coverUpload = null; // set in init(), once we have the signed-in user's uid
 
 function populateCategories() {
   categorySelect.innerHTML = CATEGORIES.map((c) => `<option value="${c.slug}">${c.name}</option>`).join("");
@@ -99,7 +101,7 @@ async function loadForEdit(uid) {
   submitBtn.textContent = "Save changes";
   $("#title").value = recipe.title;
   $("#description").value = recipe.description;
-  $("#coverImageURL").value = recipe.coverImageURL;
+  coverUpload.setInitial(recipe.coverImageURL);
   categorySelect.value = recipe.category;
   $("#difficulty").value = recipe.difficulty;
   $("#cookTimeMinutes").value = recipe.cookTimeMinutes;
@@ -114,7 +116,7 @@ function validate({ title, description, coverImageURL, cookTimeMinutes, servings
   let hasError = false;
   if (!isNonEmpty(title)) { setError("title", "Give your recipe a title."); hasError = true; }
   if (!isNonEmpty(description)) { setError("description", "Add a short description."); hasError = true; }
-  if (!isNonEmpty(coverImageURL)) { setError("coverImageURL", "A cover image URL is required."); hasError = true; }
+  if (!isNonEmpty(coverImageURL)) { setError("coverImageURL", "Add a cover photo for your recipe."); hasError = true; }
   if (!cookTimeMinutes || cookTimeMinutes < 1) { setError("cookTimeMinutes", "Enter a cook time."); hasError = true; }
   if (!servings || servings < 1) { setError("servings", "Enter a serving size."); hasError = true; }
   if (ingredients.length === 0) { setError("ingredients", "Add at least one ingredient."); hasError = true; }
@@ -132,6 +134,12 @@ async function init() {
   const user = await requireAuth(); // redirects to login.html if signed out
   initAuthHeader(user, { basePath: "" });
 
+  coverUpload = initImageUploadField($("#coverImageURL-upload"), {
+    folder: "recipes",
+    uid: user.uid,
+    onChange: () => setError("coverImageURL", ""),
+  });
+
   if (editId) {
     await loadForEdit(user.uid);
   } else {
@@ -144,10 +152,19 @@ async function init() {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    setLoading(submitBtn, true, "Uploading photo…");
+    try {
+      await coverUpload.waitForUpload(); // let any in-flight cover upload finish before we read its URL
+    } catch {
+      setLoading(submitBtn, false);
+      return; // imageUpload.js already surfaced the error on the field itself
+    }
+
     const data = {
       title: $("#title").value.trim(),
       description: $("#description").value.trim(),
-      coverImageURL: $("#coverImageURL").value.trim(),
+      coverImageURL: coverUpload.getURL() || "",
       category: categorySelect.value,
       difficulty: $("#difficulty").value,
       cookTimeMinutes: Number($("#cookTimeMinutes").value),
@@ -157,7 +174,10 @@ async function init() {
       nutrition: collectNutrition(),
     };
 
-    if (!validate(data)) return;
+    if (!validate(data)) {
+      setLoading(submitBtn, false);
+      return;
+    }
 
     setLoading(submitBtn, true, editId ? "Saving…" : "Publishing…");
     try {

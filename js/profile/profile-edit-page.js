@@ -6,6 +6,7 @@ import { initAuthHeader } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { isNonEmpty } from "../utils/validation.js";
 import { requireAuth } from "../auth/authGuard.js";
+import { initImageUploadField } from "../utils/imageUpload.js";
 import { getProfile, updateUserProfile } from "./profileService.js";
 
 const form = $("#profile-edit-form");
@@ -22,12 +23,15 @@ async function init() {
   initAuthHeader(user, { basePath: "" });
   cancelLink.href = `profile.html?id=${user.uid}`;
 
+  const photoUpload = initImageUploadField($("#photoURL-upload"), { folder: "users", uid: user.uid });
+  const coverUpload = initImageUploadField($("#coverURL-upload"), { folder: "users", uid: user.uid });
+
   const profile = await getProfile(user.uid);
   if (profile) {
     $("#displayName").value = profile.displayName || "";
     $("#bio").value = profile.bio || "";
-    $("#photoURL").value = profile.photoURL || "";
-    $("#coverURL").value = profile.coverURL || "";
+    photoUpload.setInitial(profile.photoURL);
+    coverUpload.setInitial(profile.coverURL);
   }
 
   form.addEventListener("submit", async (event) => {
@@ -36,13 +40,22 @@ async function init() {
 
     const displayName = $("#displayName").value.trim();
     const bio = $("#bio").value.trim();
-    const photoURL = $("#photoURL").value.trim();
-    const coverURL = $("#coverURL").value.trim();
 
     if (!isNonEmpty(displayName)) {
       setError("displayName", "Enter your name.");
       return;
     }
+
+    setLoading(submitBtn, true, "Uploading photos…");
+    try {
+      await Promise.all([photoUpload.waitForUpload(), coverUpload.waitForUpload()]);
+    } catch {
+      setLoading(submitBtn, false);
+      return; // imageUpload.js already surfaced the error on the relevant field
+    }
+
+    const photoURL = photoUpload.getURL() || "";
+    const coverURL = coverUpload.getURL() || "";
 
     setLoading(submitBtn, true, "Saving…");
     try {

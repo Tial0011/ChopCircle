@@ -18,6 +18,7 @@ import {
   startAfter,
   serverTimestamp,
   increment,
+  onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { createNotification } from "../notifications/notificationService.js";
 
@@ -31,6 +32,28 @@ export const PAGE_SIZE = 12;
 export async function getProfile(uid) {
   const snap = await getDoc(doc(db, USERS, uid));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+/**
+ * Live-subscribes to a user's own profile doc — so follower/following
+ * counts (and displayName/bio/photoURL/coverURL, if the owner edits their
+ * profile in another tab) update on this page without a refresh. Same
+ * `listenX(id, callback) → unsubscribe` convention as recipeService.js's
+ * listenRecipe() / feedService.js's listenPost().
+ *
+ * Note: toggleFollow() below writes the follower/following counts inside
+ * a runTransaction(), so — like the like-count listeners elsewhere in the
+ * app — this only reflects a follow/unfollow once the server confirms it,
+ * not instantly on the clicking tab's own write. profile-page.js relies on
+ * this listener as the single source of truth for the displayed count
+ * rather than also incrementing it optimistically, to avoid the two
+ * updates racing each other.
+ * @returns {() => void} unsubscribe
+ */
+export function listenProfile(uid, callback) {
+  return onSnapshot(doc(db, USERS, uid), (snap) => {
+    if (snap.exists()) callback({ id: snap.id, ...snap.data() });
+  });
 }
 
 /**

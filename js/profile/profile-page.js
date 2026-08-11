@@ -5,7 +5,7 @@ import { initMobileNav } from "../utils/mobileNav.js";
 import { initAuthHeader } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { getCurrentUser } from "../auth/authGuard.js";
-import { getProfile, listUserRecipes, listUserPosts } from "./profileService.js";
+import { getProfile, listenProfile, listUserRecipes, listUserPosts } from "./profileService.js";
 import { initProfileActions } from "./profileActions.js";
 import { recipeCardHTML } from "../recipes/recipeCard.js";
 import { postCardHTML, initPostCard } from "../feed/postCard.js";
@@ -133,6 +133,8 @@ async function init() {
   }
 
   renderProfile(profile);
+  const unsubProfile = listenProfile(profileId, renderProfile);
+  window.addEventListener("beforeunload", unsubProfile);
   await initProfileActions({ currentUser, profileId, followBtn, messageLink, editLink, followerCountEl, goToLogin });
   initTabs();
   await loadRecipes();

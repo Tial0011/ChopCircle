@@ -90,6 +90,21 @@ export async function hasUserLiked(parentType, parentId, uid) {
 }
 
 /**
+ * Live-subscribes to just the single newest post in the feed. feed-page.js
+ * uses this to show a "New posts" banner when someone else's post lands
+ * while the page is open, without re-subscribing to (and re-rendering) the
+ * whole paginated feed list on every write. Fires once immediately with
+ * whatever's currently newest, then again each time a new post outranks it.
+ * @returns {() => void} unsubscribe
+ */
+export function listenNewestPost(callback) {
+  const q = query(collection(db, POSTS), orderBy("createdAt", "desc"), limit(1));
+  return onSnapshot(q, (snap) => {
+    if (!snap.empty) callback({ id: snap.docs[0].id, ...snap.docs[0].data() });
+  });
+}
+
+/**
  * Live-subscribes to one post's own doc — its denormalized `likeCount`/
  * `commentCount`/`shareCount` — so a post card reflects OTHER users'
  * likes/comments without a page refresh. NOTE: toggleLikePost()'s write

@@ -20,6 +20,7 @@ import {
   startAfter,
   serverTimestamp,
   increment,
+  onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { createNotification } from "../notifications/notificationService.js";
 
@@ -131,6 +132,32 @@ export async function hasUserLikedRecipe(recipeId, uid) {
   if (!uid) return false;
   const snap = await getDoc(doc(db, LIKES, likeDocId(uid, recipeId)));
   return snap.exists();
+}
+
+/**
+ * Live-subscribes to one recipe's own doc — so its like/save/comment counts
+ * (and any edits) update on this page without a refresh if another tab, or
+ * another viewer, changes them. Same pattern as feedService.js's
+ * listenPost(), applied to recipes for parity.
+ * @returns {() => void} unsubscribe
+ */
+export function listenRecipe(recipeId, callback) {
+  return onSnapshot(doc(db, RECIPES, recipeId), (snap) => {
+    if (snap.exists()) callback({ id: snap.id, ...snap.data() });
+  });
+}
+
+/**
+ * Live-subscribes to whether `uid` currently likes this recipe — keeps the
+ * heart icon in sync across tabs/devices for the same account. Like
+ * feedService.js's listenUserLikedPost(), toggleLikeRecipe() writes via a
+ * transaction, so this listener only reflects a like/unlike once the
+ * server confirms it — recipe-details-page.js gates rendering on this
+ * while its own optimistic click is in flight, same as the feed does.
+ * @returns {() => void} unsubscribe
+ */
+export function listenUserLikedRecipe(recipeId, uid, callback) {
+  return onSnapshot(doc(db, LIKES, likeDocId(uid, recipeId)), (snap) => callback(snap.exists()));
 }
 
 /**
