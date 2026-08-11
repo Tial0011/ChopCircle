@@ -122,21 +122,35 @@ async function init() {
   await updateLikeUI(recipe, currentUser);
   wireOwnerActions(recipe, currentUser);
 
+  let likePending = false;
   likeBtn.addEventListener("click", async () => {
     if (!auth.currentUser) {
       window.location.href = `login.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
       return;
     }
-    likeBtn.disabled = true;
+    if (likePending) return; // guards against rapid/double clicks racing toggleLikeRecipe's transaction
+    likePending = true;
+
+    // Optimistic update — same reasoning as postCard.js's like button:
+    // flip the icon/count immediately rather than waiting on the
+    // transaction's round trip, roll back in the catch below if the
+    // write actually fails.
+    const wasLiked = likeBtn.getAttribute("aria-pressed") === "true";
+    const nowLiked = !wasLiked;
+    const countBeforeClick = Number(likeCountEl.textContent);
+    likeBtn.setAttribute("aria-pressed", String(nowLiked));
+    likeBtn.firstChild.textContent = nowLiked ? "❤️ " : "🤍 ";
+    likeCountEl.textContent = countBeforeClick + (nowLiked ? 1 : -1);
+
     try {
-      const liked = await toggleLikeRecipe(recipeId, auth.currentUser.uid);
-      likeBtn.setAttribute("aria-pressed", String(liked));
-      likeBtn.firstChild.textContent = liked ? "❤️ " : "🤍 ";
-      likeCountEl.textContent = Number(likeCountEl.textContent) + (liked ? 1 : -1);
+      await toggleLikeRecipe(recipeId, auth.currentUser.uid);
     } catch (error) {
       console.error("Failed to toggle like:", error);
+      likeBtn.setAttribute("aria-pressed", String(wasLiked));
+      likeBtn.firstChild.textContent = wasLiked ? "❤️ " : "🤍 ";
+      likeCountEl.textContent = countBeforeClick;
     } finally {
-      likeBtn.disabled = false;
+      likePending = false;
     }
   });
 

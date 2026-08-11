@@ -78,19 +78,30 @@ export function initPostCard(cardEl, post, currentUser, onNeedsAuth) {
     if (!currentUser) return onNeedsAuth();
     if (likePending) return; // guards against rapid/double clicks racing toggleLikePost's transaction
     likePending = true;
-    likeBtn.disabled = true;
+
+    // Optimistic update — flip the icon/count immediately so the tap feels
+    // instant, rather than waiting on toggleLikePost()'s round trip (a
+    // transaction: two reads + a write + a server confirmation). Rolled
+    // back in the catch below on the rare case the write actually fails.
+    const wasLiked = likeBtn.dataset.liked === "true";
+    const nowLiked = !wasLiked;
+    const countEl = $(".like-count", likeBtn);
+    const countBeforeClick = Number(countEl.textContent);
+    likeBtn.dataset.liked = String(nowLiked);
+    likeBtn.setAttribute("aria-pressed", String(nowLiked));
+    likeBtn.firstChild.textContent = nowLiked ? "❤️ " : "🤍 ";
+    countEl.textContent = countBeforeClick + (nowLiked ? 1 : -1);
+
     try {
-      const liked = await toggleLikePost(post.id, currentUser.uid);
-      likeBtn.dataset.liked = String(liked);
-      likeBtn.setAttribute("aria-pressed", String(liked));
-      likeBtn.firstChild.textContent = liked ? "❤️ " : "🤍 ";
-      const countEl = $(".like-count", likeBtn);
-      countEl.textContent = Number(countEl.textContent) + (liked ? 1 : -1);
+      await toggleLikePost(post.id, currentUser.uid);
     } catch (error) {
       console.error("Failed to toggle like:", error);
+      likeBtn.dataset.liked = String(wasLiked);
+      likeBtn.setAttribute("aria-pressed", String(wasLiked));
+      likeBtn.firstChild.textContent = wasLiked ? "❤️ " : "🤍 ";
+      countEl.textContent = countBeforeClick;
     } finally {
       likePending = false;
-      likeBtn.disabled = false;
     }
   });
 
