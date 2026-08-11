@@ -73,14 +73,25 @@ export function initPostCard(cardEl, post, currentUser, onNeedsAuth) {
     }
   })();
 
+  let likePending = false;
   likeBtn.addEventListener("click", async () => {
     if (!currentUser) return onNeedsAuth();
-    const liked = await toggleLikePost(post.id, currentUser.uid);
-    likeBtn.dataset.liked = String(liked);
-    likeBtn.setAttribute("aria-pressed", String(liked));
-    likeBtn.firstChild.textContent = liked ? "❤️ " : "🤍 ";
-    const countEl = $(".like-count", likeBtn);
-    countEl.textContent = Number(countEl.textContent) + (liked ? 1 : -1);
+    if (likePending) return; // guards against rapid/double clicks racing toggleLikePost's transaction
+    likePending = true;
+    likeBtn.disabled = true;
+    try {
+      const liked = await toggleLikePost(post.id, currentUser.uid);
+      likeBtn.dataset.liked = String(liked);
+      likeBtn.setAttribute("aria-pressed", String(liked));
+      likeBtn.firstChild.textContent = liked ? "❤️ " : "🤍 ";
+      const countEl = $(".like-count", likeBtn);
+      countEl.textContent = Number(countEl.textContent) + (liked ? 1 : -1);
+    } catch (error) {
+      console.error("Failed to toggle like:", error);
+    } finally {
+      likePending = false;
+      likeBtn.disabled = false;
+    }
   });
 
   commentToggle.addEventListener("click", async () => {
