@@ -12,20 +12,34 @@
 // succeed — see MANUAL_SETUP.md's "Web push notifications (FCM)" section.
 // The placeholder below fails with a clear, caught error rather than a
 // cryptic SDK exception if that step hasn't been done yet.
-import { getMessaging, getToken, isSupported, onMessage } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging.js";
-import { doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import {
+  getMessaging,
+  getToken,
+  isSupported,
+  onMessage,
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging.js";
+import {
+  doc,
+  updateDoc,
+  arrayUnion,
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import app, { db } from "../firebase/firebase-init.js";
 
 // PASTE the "Web Push certificate" key pair value from Firebase console →
 // Project settings → Cloud Messaging → Web configuration here. See
 // MANUAL_SETUP.md — this is the one manual step that can't be done from
 // inside this repo.
-const VAPID_KEY = "REPLACE_WITH_YOUR_FIREBASE_VAPID_KEY";
+const VAPID_KEY =
+  "BEL451E0NQXMKK2cnCi5X2e-VVWNFFSRTVXTjx_2ZxBonoP-lHI0yOfdphn1L5IMJcUkxvthQoW1ixExLvPPijk";
 
 /** @returns {Promise<boolean>} whether this browser can receive web push at all. */
 export async function isPushSupported() {
   try {
-    return "Notification" in window && "serviceWorker" in navigator && (await isSupported());
+    return (
+      "Notification" in window &&
+      "serviceWorker" in navigator &&
+      (await isSupported())
+    );
   } catch {
     return false;
   }
@@ -52,7 +66,7 @@ export async function enablePush(uid) {
   }
   if (VAPID_KEY.startsWith("REPLACE_WITH_")) {
     throw new Error(
-      "Push notifications aren't fully set up yet — a VAPID key is still needed. See MANUAL_SETUP.md."
+      "Push notifications aren't fully set up yet — a VAPID key is still needed. See MANUAL_SETUP.md.",
     );
   }
 
@@ -68,7 +82,10 @@ export async function enablePush(uid) {
   // the `push`/`notificationclick` handlers FCM needs (see that file).
   const registration = await navigator.serviceWorker.ready;
   const messaging = getMessaging(app);
-  const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
+  const token = await getToken(messaging, {
+    vapidKey: VAPID_KEY,
+    serviceWorkerRegistration: registration,
+  });
   if (!token) throw new Error("Couldn't get a push token — please try again.");
 
   await updateDoc(doc(db, "users", uid), { fcmTokens: arrayUnion(token) });
