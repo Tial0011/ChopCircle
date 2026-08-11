@@ -15,23 +15,51 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
+    // Fields any signed-in user (not just the doc's owner) is allowed to
+    // touch on someone else's document, restricted to exactly these keys —
+    // used for denormalized counters that get updated as a side effect of
+    // another user's action (liking/commenting/following), since there's
+    // no Cloud Function doing this server-side yet. See recipeService.js /
+    // feedService.js / profileService.js's like & follow transactions.
+    function onlyChangesKeys(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
     match /users/{uid} {
       allow read: if true;
       allow create: if isOwner(uid);
-      allow update: if isOwner(uid);
+      // Owner can change anything about their own profile; anyone signed
+      // in can (only) bump follower/following counts — needed because
+      // toggleFollow() updates BOTH the follower's followingCount and the
+      // followed user's followerCount, and that second write is never the
+      // profile owner's own request.
+      allow update: if isOwner(uid) || (isSignedIn() && onlyChangesKeys(['followerCount', 'followingCount']));
       allow delete: if false; // account deletion goes through a Cloud Function (future)
     }
 
     match /recipes/{recipeId} {
       allow read: if true;
       allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      // Author can edit/delete their own recipe; anyone signed in can
+      // (only) bump like/comment/save counts via toggleLikeRecipe() /
+      // addComment() acting on someone else's recipe.
+      allow update: if isSignedIn() && (
+        resource.data.authorId == request.auth.uid ||
+        onlyChangesKeys(['likeCount', 'commentCount', 'saveCount'])
+      );
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
     }
 
     match /posts/{postId} {
       allow read: if true;
       allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      // Same reasoning as recipes above, for toggleLikePost() / addComment()
+      // / a future share-count increment.
+      allow update: if isSignedIn() && (
+        resource.data.authorId == request.auth.uid ||
+        onlyChangesKeys(['likeCount', 'commentCount', 'shareCount'])
+      );
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
     }
 
     match /comments/{commentId} {
