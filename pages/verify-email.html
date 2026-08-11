@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify your email — ChopCircle</title>
+  <link rel="icon" href="../assets/logos/favicon.svg" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#E8542A" />
+  <link rel="apple-touch-icon" href="../assets/logos/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="auth-layout">
+    <aside class="auth-layout__visual" style="--auth-bg-image:url('https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=1200&q=80')">
+      <a href="../index.html" class="logo" style="color:var(--text-inverse)">
+        <span class="logo__mark" aria-hidden="true"></span>ChopCircle
+      </a>
+      <blockquote>
+        “One quick check and you're in — worth it for a community this good.”
+        <cite>— Grace E., Port Harcourt</cite>
+      </blockquote>
+    </aside>
+
+    <div class="auth-layout__form">
+      <div class="auth-card">
+        <h1>Check your inbox</h1>
+        <p class="text-muted" id="verify-email-lede">
+          We sent a verification link to your email address. Click it, then come back here.
+        </p>
+
+        <p class="field__error" id="verify-error" role="alert" style="margin-bottom:var(--space-4)"></p>
+        <p class="text-sm" id="verify-status" style="margin-bottom:var(--space-4);display:none;color:var(--color-success)">
+          ✓ Verified! Taking you to your feed…
+        </p>
+
+        <button type="button" class="btn btn--primary btn--full btn--lg" id="ive-verified-btn" style="margin-bottom:var(--space-3)">
+          I've verified — continue
+        </button>
+        <button type="button" class="btn btn--secondary btn--full btn--lg" id="resend-btn">
+          Resend email
+        </button>
+
+        <p class="auth-card__footer">
+          Wrong account? <a href="login.html" id="signout-link">Log out and start over</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/auth/verify-email-page.js"></script>
+</body>
+</html>
