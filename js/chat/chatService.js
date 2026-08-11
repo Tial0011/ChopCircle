@@ -95,17 +95,31 @@ export function listenMessages(chatId, callback) {
   return onSnapshot(q, (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }))));
 }
 
-/** Sends a message and updates the chat doc's denormalized "last message" preview. */
-export async function sendMessage(chatId, senderId, text) {
+/**
+ * Sends a message and updates the chat doc's denormalized "last message"
+ * preview. `text` stays the primary signature (every existing call site —
+ * chat-page.js's typed-message submit — just passes a string); pass an
+ * options object as the 4th arg for the Phase 12 media kinds instead of
+ * overloading `text` itself, so a caller can never accidentally send a
+ * message that's simultaneously text AND media.
+ * @param {string} chatId
+ * @param {string} senderId
+ * @param {string|null} text
+ * @param {{ imageURL?: string, audioURL?: string, audioDurationSec?: number }} [media]
+ */
+export async function sendMessage(chatId, senderId, text, media = {}) {
+  const { imageURL = null, audioURL = null, audioDurationSec = null } = media;
   await addDoc(collection(db, CHATS, chatId, MESSAGES), {
     senderId,
-    text,
-    imageURL: null,
+    text: text || null,
+    imageURL,
+    audioURL,
+    audioDurationSec,
     status: "sent",
     createdAt: serverTimestamp(),
   });
   await updateDoc(doc(db, CHATS, chatId), {
-    lastMessage: text,
+    lastMessage: text || (imageURL ? "📷 Photo" : audioURL ? "🎤 Voice note" : ""),
     lastMessageAt: serverTimestamp(),
     lastSenderId: senderId,
     lastMessageStatus: "sent",

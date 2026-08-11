@@ -19,6 +19,8 @@ import {
   serverTimestamp,
   increment,
   onSnapshot,
+  getAggregateFromServer,
+  sum,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { createNotification } from "../notifications/notificationService.js";
 
@@ -163,4 +165,53 @@ export async function listUserPosts(uid, { cursor = null } = {}) {
     posts: snap.docs.map((d) => ({ id: d.id, ...d.data() })),
     lastDoc: snap.docs[snap.docs.length - 1] || null,
   };
+}
+
+/**
+ * The `count` real users worth featuring — replaces index.html's Phase-1
+ * placeholder "Featured creators" row (5 hardcoded fake profiles baked
+ * into the static HTML). Ranked by `followerCount + totalLikes` where
+ * `totalLikes` is the sum of `likeCount` across that user's own recipes —
+ * "most followed AND liked", not just whoever has the most followers.
+ *
+ * `totalLikes` is computed with a `sum()` aggregation query per candidate
+ * (one query, no document downloads) rather than a stored counter, since
+ * no field on `users/{uid}` denormalizes "sum of my recipes' likes" (see
+ * firebase/firestore-schema.md) — cheap enough for `candidateLimit`
+ * candidates on every page load, and always exactly correct, unlike a
+ * counter that could drift.
+ *
+ * Only ranks among `candidateLimit` users by followerCount first (rather
+ * than aggregating likes for the entire user base) so this stays a fixed
+ * number of reads regardless of how many users ChopCircle has — a user
+ * with huge like counts but so few followers they miss the candidate cut
+ * is a trade-off accepted for that bound.
+ * @returns {Promise<Array<object>>} user docs (with `id`), best first.
+ */
+export async function getTopCreators(count = 5, candidateLimit = 20) {
+  const candidatesSnap = await getDocs(
+    query(collection(db, USERS), orderBy("followerCount", "desc"), limit(candidateLimit))
+  );
+  const candidates = candidatesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+  const ranked = await Promise.all(
+    candidates.map(async (user) => {
+      let totalLikes = 0;
+      try {
+        const agg = await getAggregateFromServer(
+          query(collection(db, RECIPES), where("authorId", "==", user.id)),
+          { totalLikes: sum("likeCount") }
+        );
+        totalLikes = agg.data().totalLikes || 0;
+      } catch (error) {
+        // Aggregation queries can fail on an old cached SDK / offline —
+        // fall back to ranking this candidate on followerCount alone
+        // rather than dropping them from the list entirely.
+        console.error(`Failed to sum likes for ${user.id}:`, error);
+      }
+      return { ...user, totalLikes, score: (user.followerCount || 0) + totalLikes };
+    })
+  );
+
+  return ranked.sort((a, b) => b.score - a.score).slice(0, count);
 }

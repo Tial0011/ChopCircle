@@ -123,6 +123,9 @@
           <div class="message-list" id="message-list" aria-live="polite"></div>
 
           <form class="message-composer" id="message-form">
+            <input type="file" id="message-image-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
+            <button type="button" class="btn btn--ghost btn--icon" id="message-image-btn" aria-label="Attach a photo">📷</button>
+            <button type="button" class="btn btn--ghost btn--icon" id="message-voice-btn" aria-label="Record a voice note">🎤</button>
             <input type="text" id="message-input" placeholder="Write a message…" aria-label="Write a message" autocomplete="off" required />
             <button type="submit" class="btn btn--primary btn--icon" aria-label="Send message">➤</button>
           </form>

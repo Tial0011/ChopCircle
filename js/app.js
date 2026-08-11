@@ -9,6 +9,7 @@ import { initAuthHeader } from "./utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "./utils/pwa.js";
 import { getCurrentUser } from "./auth/authGuard.js";
 import { renderTrending } from "./feed/render-trending.js";
+import { renderCreators } from "./profile/render-creators.js";
 
 function initCategoryChips() {
   const chipRow = $("#category-chips");
@@ -39,4 +40,5 @@ initInstallPrompt();
 initCategoryChips();
 initNewsletterForm();
 renderTrending().catch((error) => console.error("Failed to render trending recipes:", error));
+renderCreators().catch((error) => console.error("Failed to render featured creators:", error));
 getCurrentUser().then((user) => initAuthHeader(user, { basePath: "pages/" }));

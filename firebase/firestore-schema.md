@@ -16,7 +16,17 @@ followingCount: number
 recipeCount: number
 postCount: number
 createdAt: timestamp
+fcmTokens: string[]        (Phase 12 — web push, added by js/notifications/push.js)
 ```
+`fcmTokens` (Phase 12) holds every browser/device FCM registration token
+this user has granted push permission on — a plain array rather than a
+single field because the same person can be signed in on a phone and a
+laptop at once. `js/notifications/push.js`'s `enablePush()` appends to it
+with `arrayUnion` (never overwrites); the `sendPush` Cloud Function
+(`functions/index.js`) reads it to know where to deliver. A token FCM
+reports back as invalid (uninstalled app, revoked permission, expired) is
+removed with `arrayRemove` from inside that function. Absent entirely for
+any user who has never opted in — always guard with `|| []`.
 
 ## `recipes/{recipeId}`
 ```
@@ -136,9 +146,17 @@ it only ever runs while that thread is the one currently open, see
 senderId: string
 text: string | null
 imageURL: string | null
+audioURL: string | null    (Phase 12 — voice notes)
+audioDurationSec: number | null
 status: "sent" | "delivered" | "seen"
 createdAt: timestamp
 ```
+A message carries exactly one of `text`/`imageURL`/`audioURL` (the other
+two are `null`) — same "denormalize per kind rather than a generic
+`type` + `payload` blob" shape the rest of this schema already uses.
+`audioDurationSec` is read off the recorded `Blob` client-side before
+upload (see `js/chat/chatMedia.js`) so the bubble can show a length
+without loading the audio first.
 
 ## `categories/{categoryId}`
 ```

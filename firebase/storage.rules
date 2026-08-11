@@ -13,6 +13,14 @@ service firebase.storage {
       return request.resource.size < 8 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
+    // Chat voice notes (Phase 12) — same size ceiling as images, but audio/*
+    // instead of image/*. Kept as its own function (rather than loosening
+    // isValidImage's regex) so the users/recipes/posts photo paths below
+    // stay image-only on purpose.
+    function isValidChatMedia() {
+      return request.resource.size < 8 * 1024 * 1024
+        && (request.resource.contentType.matches('image/.*') || request.resource.contentType.matches('audio/.*'));
+    }
 
     match /users/{uid}/{fileName} {
       allow read: if true;
@@ -30,7 +38,7 @@ service firebase.storage {
     }
 
     match /chats/{chatId}/{fileName} {
-      allow read, write: if isSignedIn() && isValidImage();
+      allow read, write: if isSignedIn() && isValidChatMedia();
       // Tightened once chat participant lookups are available in Storage rules
       // (requires a Firestore get() call — see chats rule in firestore.rules
       // for the pattern to mirror here).

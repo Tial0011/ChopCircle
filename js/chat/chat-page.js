@@ -15,6 +15,7 @@ import {
   markThreadSeen,
   otherParticipant,
 } from "./chatService.js";
+import { uploadChatImage, uploadChatAudio, createVoiceRecorder } from "./chatMedia.js";
 
 const layout = $("#chat-layout");
 const chatList = $("#chat-list");
@@ -28,11 +29,16 @@ const threadProfileLink = $("#chat-thread-profile-link");
 const messageList = $("#message-list");
 const messageForm = $("#message-form");
 const messageInput = $("#message-input");
+const imageInput = $("#message-image-input");
+const imageBtn = $("#message-image-btn");
+const voiceBtn = $("#message-voice-btn");
 
 let currentUser = null;
 let openChatId = null;
 let unsubscribeMessages = null;
 let chatsById = new Map();
+let voiceRecorder = null;
+let isRecording = false;
 
 function fallbackAvatar(uid) {
   return `https://i.pravatar.cc/96?u=${uid}`;
@@ -64,13 +70,35 @@ function renderChatList(chats) {
   }
 }
 
+function formatDuration(sec) {
+  if (!sec && sec !== 0) return "";
+  const m = Math.floor(sec / 60);
+  const s = String(sec % 60).padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+function messageBubbleContent(message) {
+  if (message.imageURL) {
+    return `<a href="${message.imageURL}" target="_blank" rel="noopener"><img class="message__image" src="${message.imageURL}" alt="Photo" loading="lazy" /></a>`;
+  }
+  if (message.audioURL) {
+    return `
+      <div class="message__voice">
+        <audio controls src="${message.audioURL}"></audio>
+        ${message.audioDurationSec != null ? `<span class="message__voice-duration">${formatDuration(message.audioDurationSec)}</span>` : ""}
+      </div>`;
+  }
+  return stripHtml(message.text || "");
+}
+
 function messageHTML(message, uid) {
   const mine = message.senderId === uid;
   const tick = mine ? (message.status === "seen" ? "✓✓ Seen" : "✓ Sent") : "";
+  const mediaClass = message.imageURL ? " message__bubble--image" : message.audioURL ? " message__bubble--voice" : "";
   return `
     <div class="message ${mine ? "message--mine" : "message--theirs"}">
       <div>
-        <div class="message__bubble">${stripHtml(message.text)}</div>
+        <div class="message__bubble${mediaClass}">${messageBubbleContent(message)}</div>
         <span class="message__meta">${relativeTime(message.createdAt)}${tick ? " · " + tick : ""}</span>
       </div>
     </div>`;
@@ -145,6 +173,60 @@ async function init() {
     } catch (error) {
       console.error("Failed to send message:", error);
       messageInput.value = text;
+    }
+  });
+
+  // ---- Image messages ----
+  imageBtn?.addEventListener("click", () => imageInput.click());
+  imageInput?.addEventListener("change", async () => {
+    const file = imageInput.files?.[0];
+    imageInput.value = "";
+    if (!file || !openChatId) return;
+    imageBtn.disabled = true;
+    try {
+      const imageURL = await uploadChatImage(file, openChatId);
+      await sendMessage(openChatId, currentUser.uid, null, { imageURL });
+    } catch (error) {
+      console.error("Failed to send image:", error);
+      alert(error.message || "Couldn't send that image — please try again.");
+    } finally {
+      imageBtn.disabled = false;
+    }
+  });
+
+  // ---- Voice notes ----
+  voiceBtn?.addEventListener("click", async () => {
+    if (!openChatId) return;
+    if (!isRecording) {
+      try {
+        voiceRecorder = createVoiceRecorder();
+        await voiceRecorder.start();
+        isRecording = true;
+        voiceBtn.classList.add("is-recording");
+        voiceBtn.setAttribute("aria-label", "Stop recording and send voice note");
+      } catch (error) {
+        console.error("Microphone access failed:", error);
+        alert("Couldn't access your microphone — check your browser's permission for this site.");
+        voiceRecorder = null;
+      }
+      return;
+    }
+
+    isRecording = false;
+    voiceBtn.classList.remove("is-recording");
+    voiceBtn.setAttribute("aria-label", "Record a voice note");
+    voiceBtn.disabled = true;
+    try {
+      const { blob, durationSec } = await voiceRecorder.stop();
+      if (durationSec < 1) return; // tap without holding — nothing worth sending
+      const audioURL = await uploadChatAudio(blob, openChatId);
+      await sendMessage(openChatId, currentUser.uid, null, { audioURL, audioDurationSec: durationSec });
+    } catch (error) {
+      console.error("Failed to send voice note:", error);
+      alert(error.message || "Couldn't send that voice note — please try again.");
+    } finally {
+      voiceRecorder = null;
+      voiceBtn.disabled = false;
     }
   });
 

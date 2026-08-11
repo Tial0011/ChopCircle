@@ -105,6 +105,34 @@ button.chat-list__item:hover, button.chat-list__item[aria-current="true"] { back
   border-bottom-left-radius: var(--radius-sm);
 }
 
+/* Image / voice-note bubbles — same rounded shell, no bubble padding
+   since the media fills it edge-to-edge (image) or needs its own inline
+   layout (voice player + duration). */
+.message__bubble--image,
+.message__bubble--voice {
+  padding: var(--space-1);
+  background: transparent !important;
+}
+.message--theirs .message__bubble--voice { padding: var(--space-2) var(--space-3); background: var(--bg-surface-sunken) !important; }
+.message--mine .message__bubble--voice { padding: var(--space-2) var(--space-3); background: var(--brand-primary) !important; }
+
+.message__image {
+  display: block;
+  max-width: 240px;
+  max-height: 320px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.message__voice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.message__voice audio { height: 32px; max-width: 200px; }
+.message__voice-duration { font-size: var(--text-xs); font-family: var(--font-mono); opacity: 0.8; flex-shrink: 0; }
+
 .message__meta {
   display: block;
   margin-top: var(--space-1);
@@ -131,6 +159,21 @@ button.chat-list__item:hover, button.chat-list__item[aria-current="true"] { back
   font-size: var(--text-base);
 }
 .message-composer input:focus { border-color: var(--brand-primary); }
+
+#message-image-btn,
+#message-voice-btn {
+  flex-shrink: 0;
+  font-size: var(--text-lg);
+}
+#message-voice-btn.is-recording {
+  background: var(--brand-primary);
+  color: var(--text-on-brand);
+  animation: voice-recording-pulse 1.2s ease-in-out infinite;
+}
+@keyframes voice-recording-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
 
 @media (max-width: 768px) {
   .chat-layout { grid-template-columns: 1fr; border-left: 0; border-right: 0; }
