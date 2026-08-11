@@ -102,6 +102,29 @@
 }
 .post-card__bar > button:hover { color: var(--text-primary); }
 .post-card__like[data-liked="true"] { color: var(--color-error); }
+.post-card__share[data-reposted="true"] { color: var(--brand-primary); }
+.post-card__share[data-reposted="true"] .share-icon { filter: none; }
+
+/* ---- Reposts ---- */
+.post-card--repost .post-card__body { padding-top: var(--space-4); }
+.post-card__repost-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+}
+.post-card__repost-label a { color: inherit; font-weight: 600; text-decoration: none; }
+.post-card__repost-label a:hover { color: var(--brand-primary); }
+.post-card__shared {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.post-card__shared .post-card__header { padding: var(--space-3); }
+.post-card__shared .post-card__caption { padding: 0 var(--space-3) var(--space-3); margin-bottom: 0; }
+.post-card__shared .post-card__media { aspect-ratio: 4 / 3; }
 
 .post-card__comments {
   margin-top: var(--space-4);

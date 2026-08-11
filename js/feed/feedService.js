@@ -27,6 +27,7 @@ import { createNotification } from "../notifications/notificationService.js";
 const POSTS = "posts";
 const COMMENTS = "comments";
 const LIKES = "likes";
+const REPOSTS = "reposts";
 const USERS = "users";
 export const PAGE_SIZE = 10;
 
@@ -176,6 +177,109 @@ export async function toggleLikePost(postId, uid) {
     });
   }
   return liked;
+}
+
+function repostDocId(uid, postId) {
+  return `${uid}_post_${postId}`;
+}
+
+/** @returns {Promise<boolean>} whether `uid` has already reposted this post. */
+export async function hasUserReposted(postId, uid) {
+  if (!uid) return false;
+  const snap = await getDoc(doc(db, REPOSTS, repostDocId(uid, postId)));
+  return snap.exists();
+}
+
+/**
+ * Live-subscribes to whether `uid` currently has this post reposted — same
+ * "gate while your own toggle is pending" shape as listenUserLikedPost().
+ * @returns {() => void} unsubscribe
+ */
+export function listenUserRepostedPost(postId, uid, callback) {
+  return onSnapshot(doc(db, REPOSTS, repostDocId(uid, postId)), (snap) => callback(snap.exists()));
+}
+
+/**
+ * Reposts (or un-reposts) `postId` to `uid`'s own feed. A `reposts` doc
+ * (deterministic id `${uid}_post_${postId}`, same trick as `likes`) tracks
+ * the toggle state and points at the actual repost — a real doc in `posts`
+ * (authorId: uid) carrying `sharedPostId`/`sharedPost` (a denormalized
+ * snapshot of the original at repost time, same read-speed trade-off as
+ * authorName/authorPhotoURL elsewhere in this schema) — so it shows up in
+ * the reposter's own feed and profile grid like anything else they've
+ * posted. postCard.js renders a post with `sharedPostId` set as a "🔁
+ * reposted" card instead of the normal caption/media.
+ * Un-reposting deletes that repost post doc again (found via the
+ * `reposts` doc's `repostPostId`) — if the original post itself was
+ * deleted in between, the transaction still cleans up the repost and its
+ * tracking doc, it just can't decrement a shareCount that's already gone.
+ * Raises a "share" notification (already in firestore-schema.md's `type`
+ * enum) for the original author on a new repost only — never on removing
+ * one, and never when reposting your own post.
+ * @returns {Promise<boolean>} the resulting "reposted" state
+ */
+export async function toggleRepostPost(postId, uid) {
+  const repostRef = doc(db, REPOSTS, repostDocId(uid, postId));
+  const originalRef = doc(db, POSTS, postId);
+  const newPostRef = doc(collection(db, POSTS)); // pre-generated id; only written to if we're creating
+  const userSnap = await getDoc(doc(db, USERS, uid));
+  const user = userSnap.exists() ? userSnap.data() : {};
+  let originalAuthorId = null;
+
+  const reposted = await runTransaction(db, async (tx) => {
+    const [repostSnap, originalSnap] = await Promise.all([tx.get(repostRef), tx.get(originalRef)]);
+
+    if (repostSnap.exists()) {
+      const existingPostId = repostSnap.data().repostPostId;
+      tx.delete(repostRef);
+      if (existingPostId) tx.delete(doc(db, POSTS, existingPostId));
+      if (originalSnap.exists()) tx.update(originalRef, { shareCount: increment(-1) });
+      return false;
+    }
+
+    if (!originalSnap.exists()) throw new Error("This post no longer exists.");
+    const original = originalSnap.data();
+    originalAuthorId = original.authorId;
+
+    tx.set(newPostRef, {
+      authorId: uid,
+      authorName: user.displayName || "ChopCircle cook",
+      authorPhotoURL: user.photoURL || null,
+      caption: "",
+      imageURLs: [],
+      mentions: [],
+      hashtags: [],
+      likeCount: 0,
+      commentCount: 0,
+      shareCount: 0,
+      createdAt: serverTimestamp(),
+      sharedPostId: postId,
+      sharedPost: {
+        authorId: original.authorId,
+        authorName: original.authorName || "ChopCircle cook",
+        authorPhotoURL: original.authorPhotoURL || null,
+        caption: original.caption || "",
+        imageURLs: original.imageURLs || [],
+        createdAt: original.createdAt || null,
+      },
+    });
+    tx.set(repostRef, { uid, postId, repostPostId: newPostRef.id, createdAt: serverTimestamp() });
+    tx.update(originalRef, { shareCount: increment(1) });
+    return true;
+  });
+
+  if (reposted && originalAuthorId && originalAuthorId !== uid) {
+    await createNotification({
+      recipientId: originalAuthorId,
+      actorId: uid,
+      actorName: user.displayName,
+      actorPhotoURL: user.photoURL,
+      type: "share",
+      targetType: "post",
+      targetId: postId,
+    });
+  }
+  return reposted;
 }
 
 /**

@@ -9,6 +9,7 @@ import { getProfile, listenProfile, listUserRecipes, listUserPosts } from "./pro
 import { initProfileActions } from "./profileActions.js";
 import { recipeCardHTML } from "../recipes/recipeCard.js";
 import { postCardHTML, initPostCard } from "../feed/postCard.js";
+import { avatarSrc } from "../utils/avatar.js";
 
 const profileId = new URLSearchParams(window.location.search).get("id");
 
@@ -49,7 +50,7 @@ function renderProfile(profile) {
   document.title = `${profile.displayName} — ChopCircle`;
   coverImg.src = profile.coverURL || "https://images.unsplash.com/photo-1543353071-873f17a7a088?w=1200&q=80";
   coverImg.alt = "";
-  avatarImg.src = profile.photoURL || `https://i.pravatar.cc/160?u=${profileId}`;
+  avatarImg.src = avatarSrc(profile.photoURL);
   avatarImg.alt = profile.displayName;
   nameEl.textContent = profile.displayName;
   bioEl.textContent = profile.bio || "";

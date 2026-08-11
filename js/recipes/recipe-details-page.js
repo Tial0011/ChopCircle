@@ -16,6 +16,7 @@ import {
   listenUserLikedRecipe,
   categoryName,
 } from "./recipeService.js";
+import { avatarSrc } from "../utils/avatar.js";
 
 const recipeId = new URLSearchParams(window.location.search).get("id");
 
@@ -56,7 +57,7 @@ async function renderAuthor(authorId) {
   const snap = await getDoc(doc(db, "users", authorId));
   const author = snap.exists() ? snap.data() : { displayName: "ChopCircle cook", photoURL: null };
   $("#detail-author-name").textContent = author.displayName;
-  $("#detail-author-photo").src = author.photoURL || "https://i.pravatar.cc/80";
+  $("#detail-author-photo").src = avatarSrc(author.photoURL);
   $("#detail-author-photo").alt = author.displayName;
   $("#detail-author-link").href = `profile.html?id=${authorId}`;
 }

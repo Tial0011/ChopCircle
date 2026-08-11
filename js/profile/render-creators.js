@@ -5,12 +5,9 @@
 // from app.js" shape as js/feed/render-trending.js.
 import { $ } from "../utils/dom.js";
 import { getTopCreators } from "./profileService.js";
+import { avatarSrc } from "../utils/avatar.js";
 
 const row = $("#creators-row");
-
-function fallbackAvatar(uid) {
-  return `https://i.pravatar.cc/80?u=${uid}`;
-}
 
 function followerLabel(count = 0) {
   if (count >= 1000) return `${(count / 1000).toFixed(count % 1000 === 0 ? 0 : 1)}k followers`;
@@ -20,7 +17,7 @@ function followerLabel(count = 0) {
 function creatorCardHTML(user) {
   return `
     <a class="creator-card" href="pages/profile.html?id=${user.id}">
-      <img src="${user.photoURL || fallbackAvatar(user.id)}" alt="" />
+      <img src="${avatarSrc(user.photoURL)}" alt="" />
       <h4>${user.displayName || "ChopCircle cook"}</h4>
       <p class="text-muted">${followerLabel(user.followerCount)}</p>
     </a>`;

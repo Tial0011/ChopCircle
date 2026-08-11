@@ -2,11 +2,75 @@
 PROJECT HANDOFF SUMMARY
 ==========================
 
-Current Phase: 11 (Testing) — IN PROGRESS. The app is deployed and live
-(Netlify, not Firebase Hosting — see README.md's "Hosting" section) and
-has been getting real hands-on testing this session, which surfaced and
-fixed several real bugs. This is no longer a "set up and wait" phase —
-treat future sessions as active bug-fixing against a live deployment.
+Current Phase: 11 (Testing) — IN PROGRESS. This session added a repost
+feature, removed default/fake profile photos in favor of a plain
+silhouette icon (with existing posts/comments now syncing to a new photo
+on profile edit), and fixed the PWA install banner re-prompting behavior.
+See "THIS SESSION" section near the top for details — READ IT, especially
+the Firestore rules note, before this goes further into testing.
+
+==========================
+THIS SESSION — REPOST, AVATARS, PWA RE-PROMPT
+==========================
+
+1. **Repost button** — previously wired to nothing (`shareCount` displayed
+   live but nothing incremented it). Now a real toggle, same shape as the
+   like button: `feedService.js`'s `toggleRepostPost(postId, uid)` writes
+   a `reposts/{uid}_post_{postId}` tracking doc (deterministic id, same
+   trick as `likes`) AND creates an actual repost post in `posts`
+   (authorId = reposter, `sharedPostId`/`sharedPost` pointing at/snapshotting
+   the original — see firebase/firestore-schema.md's updated `posts` and
+   new `reposts` sections). `postCard.js` renders any post with
+   `sharedPostId` set as a "🔁 X reposted" card wrapping the original
+   instead of normal caption/media. Un-reposting deletes that repost post
+   again. Raises a "share" notification for the original author (not on
+   un-repost, not on reposting your own post) — `notificationService.js`'s
+   `notificationText()` was missing a `"share"` case entirely (fell
+   through to a vague "interacted with you"); added.
+   **⚠️ ACTION NEEDED:** `firebase/firestore.rules` got a new `reposts`
+   match block. Per this file's existing "Caution" notes, rules are
+   pasted directly into the Firebase console, not deployed via CLI — copy
+   the updated rules file into the console before repost writes will
+   actually pass security rules live.
+
+2. **No more default/fake profile photos** — every place that fell back
+   to a randomly-generated `i.pravatar.cc` photo per user id (header
+   avatar, post/comment authors, chat list, notifications, featured
+   creators, recipe author) now falls back to one shared plain silhouette
+   icon instead (`js/utils/avatar.js`'s `avatarSrc()`), same "no photo ⇒
+   generic person icon" convention as Facebook/most social apps, rather
+   than a fake photo standing in for "no photo set."
+
+3. **Profile photo updates now reach the feed** — posts/comments
+   denormalize `authorName`/`authorPhotoURL` at write time (read-speed
+   trade-off, see schema doc), which meant a profile picture change never
+   showed up on anything already posted. `profileService.js`'s
+   `updateUserProfile()` now also fans the new name/photo out to every
+   post and comment that uid has authored (batched, fire-and-forget so
+   the edit page doesn't block on it). Not yet extended to `chats`
+   (`participants` also denormalizes photoURL) or past `notifications`
+   rows — same trade-off, just not done this session; flagging as a gap.
+
+4. **PWA install banner now re-prompts** — "Not now" previously wrote a
+   `localStorage` flag that suppressed the banner forever. It no longer
+   persists anything on dismiss — the banner just closes for that view
+   and comes back on the next page load/visit. Only an actual install
+   (the `appinstalled` event) is still persisted, so someone who's
+   already installed the app doesn't keep getting asked.
+
+5. **Index hero CTA hides "Start cooking free" for signed-in visitors** —
+   that button (`#hero-start-cooking` in index.html) is removed by
+   `js/app.js` once `getCurrentUser()` resolves to a logged-in user,
+   leaving just "Explore recipes" — no point pitching a signup CTA at
+   someone who already has an account.
+
+6. **Verify-email page now mentions spam/junk** — a static line under the
+   existing "we sent a verification link" text on pages/verify-email.html
+   ("Don't see it? Check your spam or junk folder…"). Deliberately a
+   separate `<p>`, not appended into `#verify-email-lede` — that element's
+   text gets overwritten client-side in `verify-email-page.js` (it
+   re-renders with the user's actual email), which would've wiped out
+   anything appended into it.
 
 ==========================
 DEPLOYMENT — WHAT'S ACTUALLY LIVE

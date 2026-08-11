@@ -41,4 +41,9 @@ initCategoryChips();
 initNewsletterForm();
 renderTrending().catch((error) => console.error("Failed to render trending recipes:", error));
 renderCreators().catch((error) => console.error("Failed to render featured creators:", error));
-getCurrentUser().then((user) => initAuthHeader(user, { basePath: "pages/" }));
+getCurrentUser().then((user) => {
+  initAuthHeader(user, { basePath: "pages/" });
+  // Already signed in — no point pushing a "sign up free" CTA at someone
+  // with an account; the hero just offers to explore recipes instead.
+  if (user) $("#hero-start-cooking")?.remove();
+});

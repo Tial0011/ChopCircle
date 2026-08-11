@@ -16,6 +16,7 @@ import {
   otherParticipant,
 } from "./chatService.js";
 import { uploadChatImage, uploadChatAudio, createVoiceRecorder } from "./chatMedia.js";
+import { avatarSrc } from "../utils/avatar.js";
 
 const layout = $("#chat-layout");
 const chatList = $("#chat-list");
@@ -40,17 +41,13 @@ let chatsById = new Map();
 let voiceRecorder = null;
 let isRecording = false;
 
-function fallbackAvatar(uid) {
-  return `https://i.pravatar.cc/96?u=${uid}`;
-}
-
 function chatListItemHTML(chat, uid) {
   const peerId = otherParticipant(chat, uid);
   const peer = chat.participants?.[peerId] || { displayName: "ChopCircle cook", photoURL: null };
   const prefix = chat.lastSenderId === uid ? "You: " : "";
   return `
     <button class="chat-list__item" data-chat-id="${chat.id}" aria-current="false">
-      <img src="${peer.photoURL || fallbackAvatar(peerId)}" alt="" />
+      <img src="${avatarSrc(peer.photoURL)}" alt="" />
       <div class="chat-list__info">
         <div class="chat-list__row">
           <span class="chat-list__name">${stripHtml(peer.displayName)}</span>
@@ -123,7 +120,7 @@ function openChat(chatId, peerHint) {
   const chat = chatsById.get(chatId);
   const peerId = peerHint || (chat ? otherParticipant(chat, currentUser.uid) : null);
   const peer = chat?.participants?.[peerId];
-  threadAvatar.src = peer?.photoURL || fallbackAvatar(peerId);
+  threadAvatar.src = avatarSrc(peer?.photoURL);
   threadName.textContent = peer?.displayName || "ChopCircle cook";
   threadProfileLink.href = `profile.html?id=${peerId}`;
 

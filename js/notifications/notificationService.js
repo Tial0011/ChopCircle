@@ -110,6 +110,8 @@ export function notificationText(n) {
       return `commented on your post${n.targetPreview ? `: "${n.targetPreview}"` : ""}`;
     case "reply":
       return `replied to your comment${n.targetPreview ? `: "${n.targetPreview}"` : ""}`;
+    case "share":
+      return "reposted your post";
     default:
       return "interacted with you";
   }

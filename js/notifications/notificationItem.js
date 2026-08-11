@@ -7,6 +7,7 @@
 import { stripHtml } from "../utils/validation.js";
 import { relativeTime } from "../utils/format.js";
 import { notificationText, notificationHref } from "./notificationService.js";
+import { avatarSrc } from "../utils/avatar.js";
 
 /**
  * @param {object} n a notification doc (with `id`)
@@ -14,7 +15,7 @@ import { notificationText, notificationHref } from "./notificationService.js";
  *   href, same root-vs-pages/ convention as recipeCardHTML().
  */
 export function notificationItemHTML(n, { basePath = "" } = {}) {
-  const avatar = n.actorPhotoURL || `https://i.pravatar.cc/64?u=${n.actorId}`;
+  const avatar = avatarSrc(n.actorPhotoURL);
   return `
     <li class="notif-item ${n.isRead ? "" : "notif-item--unread"}" data-notification-id="${n.id}">
       <a href="${notificationHref(n, { basePath })}" class="notif-item__link">

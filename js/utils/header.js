@@ -18,8 +18,9 @@ import { getProfile } from "../profile/profileService.js";
 import { listenNotifications, markAllRead } from "../notifications/notificationService.js";
 import { notificationItemHTML } from "../notifications/notificationItem.js";
 import { listenUserChats } from "../chat/chatService.js";
+import { avatarSrc } from "./avatar.js";
 
-const FALLBACK_AVATAR = (uid) => `https://i.pravatar.cc/96?u=${uid}`;
+const FALLBACK_AVATAR = () => avatarSrc(null);
 const DROPDOWN_PREVIEW_COUNT = 5;
 
 /** Generic show/hide-on-outside-click dropdown, shared by the notification

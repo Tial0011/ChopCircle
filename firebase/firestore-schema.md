@@ -61,7 +61,19 @@ likeCount: number
 commentCount: number
 shareCount: number
 createdAt: timestamp
+sharedPostId: string | undefined   -> posts/{originalPostId}, only present on a repost
+sharedPost: { authorId, authorName, authorPhotoURL, caption, imageURLs, createdAt } | undefined
 ```
+`sharedPostId`/`sharedPost` (repost pass) are only set on a post created by
+`toggleRepostPost()` (`js/feed/feedService.js`) — a repost is a real post
+doc (own `id`, `authorId` = the reposter, empty `caption`/`imageURLs` of
+its own) that additionally carries a denormalized snapshot of the
+original post it's sharing, same read-speed trade-off as `authorName`/
+`authorPhotoURL` above. `postCard.js` renders any post with `sharedPostId`
+set as a "🔁 reposted" card wrapping that snapshot instead of the normal
+caption/media. The original's `shareCount` is incremented/decremented
+alongside — see the `reposts` collection below for the toggle/undo
+tracking doc.
 
 ## `comments/{commentId}`
 ```
@@ -82,6 +94,18 @@ createdAt: timestamp
 ```
 Deterministic doc IDs make "did I already like this" a single doc read
 and prevent duplicate likes without a query.
+
+## `reposts/{repostId}`  (id = `${uid}_post_${postId}`)
+```
+uid: string
+postId: string             -> posts/{originalPostId}
+repostPostId: string        -> posts/{repostId}, the actual repost doc this tracks
+createdAt: timestamp
+```
+Deterministic doc IDs, same "did I already do this" single-read pattern as
+`likes` — `toggleRepostPost()` uses this doc's existence to decide whether
+a tap on the share button reposts or un-reposts, and (on un-repost) reads
+`repostPostId` off it to find and delete the repost post it created.
 
 ## `follows/{followId}`  (id = `${followerId}_${followingId}`)
 ```

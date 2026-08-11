@@ -8,7 +8,7 @@
 // note about picking one shape and reusing it.
 import { $ } from "./dom.js";
 
-const DISMISSED_KEY = "chopcircle-install-dismissed";
+const INSTALLED_KEY = "chopcircle-installed";
 const rootUrl = (path) => new URL(`../../${path}`, import.meta.url).href;
 
 export function registerServiceWorker() {
@@ -53,14 +53,18 @@ function buildBanner({ title, body, showInstallButton }) {
   return banner;
 }
 
+// "Not now" only dismisses the banner for THIS view — deliberately not
+// persisted to localStorage, so the prompt comes back on the next page
+// load/visit instead of being silenced forever after one dismissal. Only
+// an actual install (see the `appinstalled` listener below) is persisted,
+// since there's no reason to keep asking someone who already has the app.
 function dismiss(banner) {
   banner.classList.remove("is-visible");
-  localStorage.setItem(DISMISSED_KEY, "true");
   setTimeout(() => banner.remove(), 300);
 }
 
 export function initInstallPrompt() {
-  if (isStandalone() || localStorage.getItem(DISMISSED_KEY) === "true") return;
+  if (isStandalone() || localStorage.getItem(INSTALLED_KEY) === "true") return;
 
   // Chrome/Edge/Android: the browser fires this event when it decides the
   // app is installable. We preventDefault() it so we can show our own
@@ -83,7 +87,7 @@ export function initInstallPrompt() {
   });
 
   window.addEventListener("appinstalled", () => {
-    localStorage.setItem(DISMISSED_KEY, "true");
+    localStorage.setItem(INSTALLED_KEY, "true");
     $("#install-banner")?.remove();
   });
 

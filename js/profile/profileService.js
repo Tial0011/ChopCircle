@@ -10,6 +10,7 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  writeBatch,
   runTransaction,
   query,
   where,
@@ -28,6 +29,7 @@ const USERS = "users";
 const FOLLOWS = "follows";
 const RECIPES = "recipes";
 const POSTS = "posts";
+const COMMENTS = "comments";
 export const PAGE_SIZE = 12;
 
 /** @returns {Promise<object|null>} the user's profile (with `id`), or null if it doesn't exist. */
@@ -59,6 +61,32 @@ export function listenProfile(uid, callback) {
 }
 
 /**
+ * Fans the new displayName/photoURL out to every post and comment `uid`
+ * has already authored. Posts/comments denormalize authorName/
+ * authorPhotoURL for read speed (see firestore-schema.md) — without this,
+ * a profile-picture change wouldn't show up on anything already posted to
+ * the feed, only on new posts going forward. Chunked into batches of 400
+ * writes (Firestore's per-batch limit is 500) in case a prolific user's
+ * combined post+comment count ever gets that high; run serially since
+ * this only happens on a profile save, not on every page load. Called
+ * fire-and-forget from updateUserProfile() below so the edit page doesn't
+ * sit waiting on however many old posts a long-time user has.
+ */
+async function fanOutAuthorInfo(uid, { displayName, photoURL }) {
+  const [postsSnap, commentsSnap] = await Promise.all([
+    getDocs(query(collection(db, POSTS), where("authorId", "==", uid))),
+    getDocs(query(collection(db, COMMENTS), where("authorId", "==", uid))),
+  ]);
+  const refs = [...postsSnap.docs.map((d) => d.ref), ...commentsSnap.docs.map((d) => d.ref)];
+  const fields = { authorName: displayName || "ChopCircle cook", authorPhotoURL: photoURL || null };
+  for (let i = 0; i < refs.length; i += 400) {
+    const batch = writeBatch(db);
+    refs.slice(i, i + 400).forEach((ref) => batch.update(ref, fields));
+    await batch.commit();
+  }
+}
+
+/**
  * Updates the editable fields of `uid`'s own profile. Firestore rules
  * already enforce that only the profile owner can do this — this function
  * assumes that check has passed. displayName/photoURL are NOT synced back
@@ -71,6 +99,9 @@ export async function updateUserProfile(uid, { displayName, bio, photoURL, cover
     bio,
     photoURL: photoURL || null,
     coverURL: coverURL || null,
+  });
+  fanOutAuthorInfo(uid, { displayName, photoURL }).catch((error) => {
+    console.error("Failed to sync new profile photo/name to existing posts and comments:", error);
   });
 }
 
