@@ -152,8 +152,11 @@ the app increments it. This was a known gap before this session
 DELIBERATELY OUT OF SCOPE (carried over, still true)
 ==========================
 
-- Real web push notifications — see service-worker.js's comment and
-  functions/README.md.
+- ~~Real web push notifications~~ — done, Phase 12. See
+  `js/notifications/push.js`, `service-worker.js`'s `push`/
+  `notificationclick` handlers, and `functions/index.js`'s `sendPush`.
+  Needs the manual Firebase console setup in `MANUAL_SETUP.md` §6 (VAPID
+  key, Blaze plan, function deploy) before it actually delivers anything.
 - Share button functionality (see above).
 - Comment/reply notifications on RECIPES — recipe-details.html still has
   no comment UI.

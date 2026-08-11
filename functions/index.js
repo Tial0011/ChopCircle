@@ -82,12 +82,83 @@ const FieldValue = admin.firestore.FieldValue;
 // });
 
 // ---------------------------------------------------------------------------
-// Account deletion (referenced but not implemented in
-// firebase/firestore.rules: "allow delete: if false; // account deletion
-// goes through a Cloud Function (future)"). A callable, not a trigger,
-// since it needs to also delete the Firebase Auth user — something no
-// Firestore trigger can do on its own.
+// Web push delivery (Phase 12) — ACTIVE, unlike the counter/notification
+// examples above. Fires whenever notificationService.js's createNotification()
+// writes a new notifications/{id} doc (in-app notification creation stays
+// entirely client-side and unchanged — this function only ADDS push
+// delivery on top of it, it doesn't replace anything). Reads
+// users/{recipientId}.fcmTokens (saved by js/notifications/push.js's
+// enablePush()) and sends to every token on file, since one person can be
+// signed in on more than one device.
+//
+// Same copy logic as notificationService.js's notificationText()/
+// notificationHref() — duplicated here (rather than imported) because this
+// runs in a separate CommonJS Node runtime, not the browser ES modules the
+// client code uses. If you change one, change the other.
+//
+// Unlike the commented-out counter/notification triggers above, this has
+// nothing to double-fire against on the client (creating the Firestore
+// notification doc was ALREADY client-side and stays that way) — it is
+// safe to deploy on its own, once the manual setup in the repo root's
+// MANUAL_SETUP.md is done (VAPID key, Blaze plan, `npm install` in this
+// folder, `firebase deploy --only functions`).
 // ---------------------------------------------------------------------------
+
+function pushCopyFor(notification) {
+  const actor = notification.actorName || "Someone";
+  switch (notification.type) {
+    case "like":
+      return {
+        title: "New like",
+        body: `${actor} liked your ${notification.targetType === "recipe" ? "recipe" : "post"}${notification.targetPreview ? ` "${notification.targetPreview}"` : ""}`,
+      };
+    case "follow":
+      return { title: "New follower", body: `${actor} started following you` };
+    case "comment":
+      return { title: "New comment", body: `${actor} commented on your post${notification.targetPreview ? `: "${notification.targetPreview}"` : ""}` };
+    case "reply":
+      return { title: "New reply", body: `${actor} replied to your comment${notification.targetPreview ? `: "${notification.targetPreview}"` : ""}` };
+    default:
+      return { title: "ChopCircle", body: `${actor} interacted with you` };
+  }
+}
+
+function pushUrlFor(notification) {
+  if (notification.type === "follow") return `pages/profile.html?id=${notification.actorId}`;
+  if (notification.targetType === "recipe") return `pages/recipe-details.html?id=${notification.targetId}`;
+  return "pages/feed.html";
+}
+
+exports.sendPush = onDocumentCreated("notifications/{notificationId}", async (event) => {
+  const notification = event.data?.data();
+  if (!notification) return;
+
+  const recipientSnap = await db.doc(`users/${notification.recipientId}`).get();
+  const tokens = recipientSnap.data()?.fcmTokens || [];
+  if (tokens.length === 0) return;
+
+  const { title, body } = pushCopyFor(notification);
+  const url = pushUrlFor(notification);
+
+  const response = await admin.messaging().sendEachForMulticast({
+    tokens,
+    notification: { title, body },
+    data: { url, type: notification.type || "" },
+    webpush: { fcmOptions: { link: url } },
+  });
+
+  // Prune tokens FCM reports as dead (uninstalled/uninstalled browser
+  // profile/revoked permission) so fcmTokens doesn't grow forever with
+  // sends that will only ever fail.
+  const deadTokens = response.responses
+    .map((r, i) => (r.success ? null : tokens[i]))
+    .filter(Boolean);
+  if (deadTokens.length > 0) {
+    await db.doc(`users/${notification.recipientId}`).update({
+      fcmTokens: FieldValue.arrayRemove(...deadTokens),
+    });
+  }
+});
 
 // Deliberately left commented out, unlike the counter/notification
 // examples above, this one isn't blocked on double-firing with client

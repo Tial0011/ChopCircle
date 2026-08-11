@@ -77,3 +77,62 @@ remove, or rename anything in that list.
   there's no in-app "a new version is available, refresh?" toast yet.
   Worth adding once the app has enough returning traffic for stale-tab
   staleness to matter.
+
+## 6. Web push notifications (FCM) — Phase 12
+
+Everything code-side is done here too: `js/notifications/push.js` (browser
+permission + token registration), `service-worker.js`'s `push` /
+`notificationclick` handlers, and `functions/index.js`'s `sendPush` Cloud
+Function (sends the actual push whenever a `notifications/{id}` doc is
+created — see `functions/README.md`). None of it will work until the
+steps below are done — nothing here can be done from inside the repo.
+
+1. **Enable Cloud Messaging.** Firebase console → your project → Project
+   settings → Cloud Messaging tab. If it asks you to enable the "Firebase
+   Cloud Messaging API (V1)", do that (it's a Google Cloud API toggle, one
+   click).
+2. **Generate a Web Push certificate (VAPID key pair).** Same Cloud
+   Messaging tab, "Web configuration" section → "Generate key pair" if one
+   doesn't already exist. Copy the resulting key string.
+3. **Paste the key into the client.** Open `js/notifications/push.js` and
+   replace the `VAPID_KEY` placeholder near the top with the value you just
+   copied. Without this, `enablePush()` throws a clear "not fully set up
+   yet" error instead of silently failing — that's the symptom to expect
+   until this step is done.
+4. **Upgrade the Firebase project to the Blaze (pay-as-you-go) plan.**
+   Cloud Functions — which `sendPush` needs to actually send anything —
+   aren't available on the free Spark plan. Firebase console → bottom-left
+   "Upgrade". Blaze still has a generous free tier; you only pay past it.
+5. **Install and deploy the function.**
+   ```
+   cd functions
+   npm install
+   firebase login
+   firebase use <your-project-id>       # or fill in the placeholder in .firebaserc
+   npm run deploy                       # or: firebase deploy --only functions
+   ```
+6. **Test it end-to-end.**
+   - Open `pages/notifications.html` while signed in, in a browser that
+     hasn't decided on notification permission yet (or after resetting
+     site permissions) — the "Enable notifications" banner should show.
+   - Click it, accept the browser's permission prompt. The banner should
+     disappear and a confirmation line should replace it.
+   - From a second account (or `incognito` + a second test user), like or
+     follow the first account.
+   - With the first account's tab in the BACKGROUND (or fully closed, if
+     the browser/OS supports background push — desktop Chrome does once
+     the site's been visited), a native OS notification should appear
+     within a few seconds. Clicking it should open/focus the right page.
+   - With the tab in the FOREGROUND instead, no OS popup is expected —
+     `listenForegroundPush()` in `push.js` still logs receipt via
+     `onMessage()`, and the in-app bell badge updates regardless either way
+     (that path never depended on any of this setup).
+7. **iOS Safari note:** web push on iOS requires the site to be added to
+   the home screen (installed as a PWA — see section 3 above) AND iOS
+   16.4+. It will not work from a regular Safari tab; this is an Apple
+   platform limitation, not a bug in this app.
+
+If `sendPush`'s logs (`firebase functions:log` or console → Functions →
+Logs) show sends failing for every token, double check the Blaze upgrade
+went through and that `firebase deploy` actually targeted the right
+project (`firebase use` output).

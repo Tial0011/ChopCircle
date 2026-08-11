@@ -93,6 +93,15 @@
           <h1>Notifications</h1>
         </div>
 
+        <div class="push-banner hidden" id="push-banner">
+          <div class="push-banner__text">
+            <h4>Get notified even when ChopCircle isn't open</h4>
+            <p class="text-sm text-muted">Turn on push notifications for likes, comments, and new followers.</p>
+          </div>
+          <button type="button" class="btn btn--primary" id="push-enable-btn">Enable notifications</button>
+        </div>
+        <p class="push-banner__status hidden text-sm text-muted" id="push-status"></p>
+
         <div class="card">
           <ul class="notif-list" id="notif-page-list" aria-live="polite">
             <li class="notif-item"><div class="notif-item__link"><div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skeleton" style="height:12px;width:30%"></div></div></div></li>

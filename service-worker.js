@@ -6,14 +6,17 @@
 // the network untouched (see shouldBypass()); this worker only owns the UI
 // shell, not app data. Registered from js/utils/pwa.js.
 //
-// Phase 10 (Notifications) deliberately did NOT add a `push` /
-// `notificationclick` handler here: real browser push delivery needs a
-// server holding VAPID keys that calls the FCM send endpoint whenever a
-// notification is created, and this app has no backend (Firestore writes
-// are client-side — see firebase/firestore-schema.md). In-app
-// notifications (bell + badge + pages/notifications.html, all live via
-// onSnapshot) ship the actual value without that dependency. Revisit once
-// a Cloud Functions backend exists (see /functions and MANUAL_SETUP.md).
+// Phase 12 adds real web push delivery: the `push` handler below shows a
+// notification for messages the browser delivers while this tab isn't in
+// the foreground (foreground delivery is handled separately by
+// js/notifications/push.js's onMessage() listener, which FCM routes
+// differently). The server half — a Cloud Function that actually calls
+// the FCM send API whenever a notification is created — lives in
+// functions/index.js's `sendPush` export. See MANUAL_SETUP.md for the
+// Firebase console steps (VAPID key, Blaze plan) this needed before it
+// could go live; in-app notifications (bell + badge +
+// pages/notifications.html, all live via onSnapshot) work with none of
+// that and remain the source of truth either way.
 
 const CACHE_VERSION = "chopcircle-v1";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
@@ -131,6 +134,57 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => undefined);
       return cached || (await network) || Response.error();
+    })()
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Web push (Phase 12) — see the file-header comment above.
+// ---------------------------------------------------------------------------
+
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    return; // not a JSON payload this app knows how to render
+  }
+
+  // functions/index.js's sendPush() sets both `notification` (title/body —
+  // shown by the OS automatically on some platforms) and `data` (the same
+  // fields, plus routing info) so this handler works whether the browser
+  // already auto-displayed the `notification` block or not; showNotification
+  // is idempotent enough here since sendPush() only sends one or the other
+  // per platform via FCM's own webpush/data split, not both redundantly.
+  const title = payload.notification?.title || payload.data?.title || "ChopCircle";
+  const body = payload.notification?.body || payload.data?.body || "";
+  const url = payload.data?.url || "./";
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "assets/icons/icon-192.png",
+      badge: "assets/icons/icon-96.png",
+      data: { url },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "./";
+
+  event.waitUntil(
+    (async () => {
+      const allClients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const existing = allClients.find((client) => client.url.includes(url));
+      if (existing) {
+        existing.focus();
+      } else {
+        self.clients.openWindow(url);
+      }
     })()
   );
 });
