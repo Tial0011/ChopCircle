@@ -38,7 +38,13 @@ service firebase.storage {
     }
 
     match /chats/{chatId}/{fileName} {
-      allow read, write: if isSignedIn() && isValidChatMedia();
+      // Split (unlike the folders above) because isValidChatMedia() checks
+      // request.resource, which only exists on a WRITE request — applying
+      // it to reads too (as a single shared `allow read, write` condition
+      // would) makes every read fail with a 403, since request.resource is
+      // undefined there.
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isValidChatMedia();
       // Tightened once chat participant lookups are available in Storage rules
       // (requires a Firestore get() call — see chats rule in firestore.rules
       // for the pattern to mirror here).
