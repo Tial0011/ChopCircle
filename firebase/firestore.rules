@@ -96,7 +96,13 @@ service cloud.firestore {
     }
 
     match /chats/{chatId} {
-      allow read, update: if isSignedIn() && request.auth.uid in resource.data.participantIds;
+      // `resource == null` covers getOrCreateChat()'s very first getDoc()
+      // on a chat that doesn't exist yet — without this, checking for
+      // existence before creating throws "permission denied" instead of
+      // just coming back empty, because `resource.data` isn't readable on
+      // a doc that isn't there.
+      allow read: if isSignedIn() && (resource == null || request.auth.uid in resource.data.participantIds);
+      allow update: if isSignedIn() && request.auth.uid in resource.data.participantIds;
       allow create: if isSignedIn() && request.auth.uid in request.resource.data.participantIds;
 
       match /messages/{messageId} {
