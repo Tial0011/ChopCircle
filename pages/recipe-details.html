@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="page-title">Recipe — ChopCircle</title>
+  <link rel="icon" href="../assets/logos/favicon.svg" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#E8542A" />
+  <link rel="apple-touch-icon" href="../assets/logos/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="logo">
+        <span class="logo__mark" aria-hidden="true"></span>
+        ChopCircle
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="feed.html">Feed</a>
+        <a href="recipes.html" aria-current="page">Recipes</a>
+        <a href="chat.html">Messages<span class="messages-badge hidden"></span></a>
+        <a href="../index.html#categories">Categories</a>
+        <a href="../index.html#creators">Creators</a>
+      </nav>
+      <div class="header-search" role="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Search jollof, egusi, small chops…" aria-label="Search recipes" />
+      </div>
+      <div class="header-actions">
+        <button class="btn btn--ghost" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+        <a class="btn btn--primary" href="recipe-form.html">Share a recipe</a>
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary" href="login.html">Log in</a>
+          <a class="btn btn--primary" href="signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden">
+          <div class="notif-bell-wrap">
+            <button class="notif-bell" id="notif-bell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+              🔔<span class="badge hidden" id="notif-badge">0</span>
+            </button>
+            <div class="dropdown-panel notif-dropdown hidden" id="notif-dropdown" role="menu" aria-label="Notifications">
+              <div class="dropdown-panel__header"><span>Notifications</span><a href="notifications.html">See all</a></div>
+              <ul class="notif-list" id="notif-list"></ul>
+              <p class="notif-empty text-muted text-sm hidden" id="notif-empty">No notifications yet.</p>
+            </div>
+          </div>
+          <div class="avatar-wrap">
+            <button class="avatar-btn" id="avatar-btn" aria-label="Account menu" aria-haspopup="true" aria-expanded="false">
+              <img id="header-avatar" src="" alt="" />
+            </button>
+            <div class="dropdown-panel account-dropdown hidden" id="account-dropdown" role="menu" aria-label="Account">
+              <a href="profile.html" id="account-profile-link" class="account-profile-link" role="menuitem">My profile</a>
+              <a href="chat.html" role="menuitem">Messages</a>
+              <button type="button" id="logout-btn" class="logout-btn" role="menuitem">Log out</button>
+            </div>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburger-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-drawer">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+    <button class="mobile-drawer__backdrop" aria-label="Close menu" tabindex="-1"></button>
+    <nav class="mobile-drawer__panel" aria-label="Mobile">
+      <div class="mobile-drawer__search" role="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Search jollof, egusi, small chops…" aria-label="Search recipes" />
+      </div>
+      <div class="mobile-drawer__links">
+        <a href="feed.html">Feed</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="chat.html">Messages<span class="messages-badge hidden"></span></a>
+        <a href="../index.html#categories">Categories</a>
+        <a href="../index.html#creators">Creators</a>
+      </div>
+      <div class="mobile-drawer__actions">
+        <a class="btn btn--primary btn--full btn--lg" href="recipe-form.html">Share a recipe</a>
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary btn--full btn--lg" href="login.html">Log in</a>
+          <a class="btn btn--primary btn--full btn--lg" href="signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden mobile-account-links">
+          <a href="profile.html" class="account-profile-link">My profile</a>
+          <a href="notifications.html">Notifications</a>
+          <button type="button" class="logout-btn">Log out</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <main id="main">
+    <div id="loading-state" class="container" style="padding:var(--space-8) 0">
+      <div class="skeleton" style="height:340px;width:100%;margin-bottom:var(--space-5)"></div>
+      <div class="skeleton" style="height:32px;width:50%;margin-bottom:var(--space-3)"></div>
+      <div class="skeleton" style="height:16px;width:30%"></div>
+    </div>
+
+    <div id="not-found-state" class="container hidden" style="padding:var(--space-8) 0">
+      <div class="empty-state">
+        <h4>We couldn't find that recipe</h4>
+        <p>It may have been removed, or the link might be off.</p>
+        <a href="recipes.html" class="btn btn--primary" style="margin-top:var(--space-4)">Browse recipes</a>
+      </div>
+    </div>
+
+    <article id="recipe-detail" class="recipe-detail hidden">
+      <div class="recipe-detail__hero">
+        <img id="detail-cover" src="" alt="" />
+      </div>
+
+      <div class="container recipe-detail__grid">
+        <div class="recipe-detail__main">
+          <p class="eyebrow" id="detail-category"></p>
+          <h1 id="detail-title"></h1>
+          <p id="detail-description" class="lede"></p>
+
+          <div class="recipe-detail__meta">
+            <div><span class="text-mono" id="detail-time"></span><span>Cook time</span></div>
+            <div><span class="text-mono" id="detail-difficulty"></span><span>Difficulty</span></div>
+            <div><span class="text-mono" id="detail-servings"></span><span>Servings</span></div>
+          </div>
+
+          <div class="recipe-detail__actions">
+            <button class="btn btn--secondary" id="like-btn" aria-pressed="false">🤍 <span id="like-count">0</span></button>
+            <a class="btn btn--secondary hidden" id="edit-link" href="#">Edit recipe</a>
+            <button class="btn btn--ghost hidden" id="delete-btn">Delete</button>
+          </div>
+
+          <section aria-labelledby="ingredients-heading">
+            <h3 id="ingredients-heading">Ingredients</h3>
+            <ul class="ingredient-list" id="ingredient-list"></ul>
+          </section>
+
+          <section aria-labelledby="steps-heading">
+            <h3 id="steps-heading">Steps</h3>
+            <ol class="step-list" id="step-list"></ol>
+          </section>
+
+          <section id="nutrition-section" class="hidden" aria-labelledby="nutrition-heading">
+            <h3 id="nutrition-heading">Nutrition (per serving)</h3>
+            <div class="nutrition-grid" id="nutrition-grid"></div>
+          </section>
+        </div>
+
+        <aside class="recipe-detail__side">
+          <a class="recipe-detail__author-card" id="detail-author-link" href="#">
+            <img id="detail-author-photo" src="" alt="" />
+            <div>
+              <strong id="detail-author-name"></strong>
+              <p class="text-sm text-muted">Recipe creator</p>
+            </div>
+          </a>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div>
+        <a href="../index.html" class="logo" style="color:var(--text-inverse)"><span class="logo__mark" aria-hidden="true"></span>ChopCircle</a>
+        <p style="margin-top:var(--space-3);opacity:0.7;max-width:32ch">The home for Nigerian home cooks and food lovers, everywhere.</p>
+      </div>
+      <div><h5>Explore</h5><ul><li><a href="feed.html">Feed</a></li><li><a href="recipes.html">Recipes</a></li><li><a href="../index.html#creators">Creators</a></li></ul></div>
+      <div><h5>Account</h5><ul><li><a href="login.html">Log in</a></li><li><a href="signup.html">Sign up</a></li><li><a href="settings.html">Settings</a></li></ul></div>
+      <div><h5>Company</h5><ul><li><a href="#">About</a></li><li><a href="#">Advertise with us</a></li><li><a href="#">Privacy</a></li></ul></div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>© 2026 ChopCircle. Made with ❤️ in Nigeria.</span>
+      <span>Built for cooks, by cooks.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/recipes/recipe-details-page.js"></script>
+</body>
+</html>

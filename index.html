@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChopCircle — Discover, Cook, Share Nigerian Food</title>
+  <meta name="description" content="ChopCircle is the home for Nigerian home cooks and food lovers — discover recipes, share what you cook, and build your circle." />
+  <link rel="icon" href="assets/logos/favicon.svg" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#E8542A" />
+  <link rel="apple-touch-icon" href="assets/logos/apple-touch-icon.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="index.html" class="logo">
+        <span class="logo__mark" aria-hidden="true"></span>
+        ChopCircle
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="pages/feed.html">Feed</a>
+        <a href="pages/recipes.html">Recipes</a>
+        <a href="pages/chat.html">Messages<span class="messages-badge hidden"></span></a>
+        <a href="#categories">Categories</a>
+        <a href="#creators">Creators</a>
+      </nav>
+      <div class="header-search" role="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Search jollof, egusi, small chops…" aria-label="Search recipes" />
+      </div>
+      <div class="header-actions">
+        <button class="btn btn--ghost" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary" href="pages/login.html">Log in</a>
+          <a class="btn btn--primary" href="pages/signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden">
+          <div class="notif-bell-wrap">
+            <button class="notif-bell" id="notif-bell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+              🔔<span class="badge hidden" id="notif-badge">0</span>
+            </button>
+            <div class="dropdown-panel notif-dropdown hidden" id="notif-dropdown" role="menu" aria-label="Notifications">
+              <div class="dropdown-panel__header"><span>Notifications</span><a href="pages/notifications.html">See all</a></div>
+              <ul class="notif-list" id="notif-list"></ul>
+              <p class="notif-empty text-muted text-sm hidden" id="notif-empty">No notifications yet.</p>
+            </div>
+          </div>
+          <div class="avatar-wrap">
+            <button class="avatar-btn" id="avatar-btn" aria-label="Account menu" aria-haspopup="true" aria-expanded="false">
+              <img id="header-avatar" src="" alt="" />
+            </button>
+            <div class="dropdown-panel account-dropdown hidden" id="account-dropdown" role="menu" aria-label="Account">
+              <a href="pages/profile.html" id="account-profile-link" class="account-profile-link" role="menuitem">My profile</a>
+              <a href="pages/chat.html" role="menuitem">Messages</a>
+              <button type="button" id="logout-btn" class="logout-btn" role="menuitem">Log out</button>
+            </div>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburger-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-drawer">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+    <button class="mobile-drawer__backdrop" aria-label="Close menu" tabindex="-1"></button>
+    <nav class="mobile-drawer__panel" aria-label="Mobile">
+      <div class="mobile-drawer__search" role="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Search jollof, egusi, small chops…" aria-label="Search recipes" />
+      </div>
+      <div class="mobile-drawer__links">
+        <a href="pages/feed.html">Feed</a>
+        <a href="pages/recipes.html">Recipes</a>
+        <a href="pages/chat.html">Messages<span class="messages-badge hidden"></span></a>
+        <a href="#categories">Categories</a>
+        <a href="#creators">Creators</a>
+      </div>
+      <div class="mobile-drawer__actions">
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary btn--full btn--lg" href="pages/login.html">Log in</a>
+          <a class="btn btn--primary btn--full btn--lg" href="pages/signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden mobile-account-links">
+          <a href="pages/profile.html" class="account-profile-link">My profile</a>
+          <a href="pages/notifications.html">Notifications</a>
+          <button type="button" class="logout-btn">Log out</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <main id="main">
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+      <div class="container hero__grid">
+        <div>
+          <p class="eyebrow">Nigeria's food community</p>
+          <h1>Every pot has a story. <em style="font-style:italic;color:var(--brand-primary)">Chop</em> it together.</h1>
+          <p class="lede">Discover trusted jollof recipes, share your own cooking wins, and follow the cooks whose pots you trust — all in one place built for how Nigerians actually eat.</p>
+          <div class="hero__actions">
+            <a href="pages/signup.html" class="btn btn--primary btn--lg">Start cooking free</a>
+            <a href="pages/recipes.html" class="btn btn--secondary btn--lg">Explore recipes</a>
+          </div>
+          <div class="hero__stats">
+            <div><strong>12,400+</strong><span>Recipes shared</span></div>
+            <div><strong>3,800+</strong><span>Home cooks</span></div>
+            <div><strong>96%</strong><span>Would cook again</span></div>
+          </div>
+        </div>
+        <div class="hero__collage">
+          <img src="https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=600&q=80" alt="A pot of jollof rice garnished with fried plantain" loading="eager" />
+          <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&q=80" alt="Grilled suya skewers with spice rub" loading="lazy" />
+          <img src="https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=500&q=80" alt="A bowl of egusi soup with pounded yam" loading="lazy" />
+          <div class="floating-tag">🔥 Trending: Party Jollof</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="pot-rim pot-rim--onSurface" role="presentation"></div>
+
+    <!-- ============ CATEGORIES ============ -->
+    <section class="section" id="categories" style="background:var(--bg-surface)">
+      <div class="container">
+        <div class="section__head">
+          <h2>Cook by category</h2>
+        </div>
+        <div class="chip-row" id="category-chips" role="list">
+          <button class="chip" aria-pressed="true" data-category="" role="listitem">All</button>
+          <button class="chip" data-category="local-dishes" role="listitem">Local Dishes</button>
+          <button class="chip" data-category="rice" role="listitem">Rice</button>
+          <button class="chip" data-category="soups" role="listitem">Soups</button>
+          <button class="chip" data-category="swallow" role="listitem">Swallow</button>
+          <button class="chip" data-category="breakfast" role="listitem">Breakfast</button>
+          <button class="chip" data-category="small-chops" role="listitem">Small Chops</button>
+          <button class="chip" data-category="drinks" role="listitem">Drinks</button>
+          <button class="chip" data-category="healthy-meals" role="listitem">Healthy Meals</button>
+          <button class="chip" data-category="continental" role="listitem">Continental</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TRENDING RECIPES ============ -->
+    <section class="section" id="trending">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <p class="eyebrow">Hot right now</p>
+            <h2>Trending recipes</h2>
+          </div>
+          <a href="pages/recipes.html" class="btn btn--ghost">See all →</a>
+        </div>
+        <div class="recipe-grid" id="trending-recipes" aria-live="polite">
+          <!-- Rendered by js/feed/render-trending.js (renderTrending()) — static fallback below for first paint -->
+          <article class="card recipe-card">
+            <div class="recipe-card__media">
+              <img src="https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=500&q=80" alt="Party jollof rice" loading="lazy" />
+              <button class="recipe-card__save" aria-label="Save recipe">🤍</button>
+            </div>
+            <div class="recipe-card__body">
+              <h3 class="recipe-card__title">Smoky Party Jollof</h3>
+              <div class="recipe-card__meta">
+                <span class="text-mono">45 min</span><span>·</span><span>Medium</span><span>·</span><span>Serves 6</span>
+              </div>
+              <div class="recipe-card__author">
+                <img src="https://i.pravatar.cc/40?img=32" alt="" />
+                <span>Chef Amaka</span>
+              </div>
+            </div>
+          </article>
+          <article class="card recipe-card">
+            <div class="recipe-card__media">
+              <img src="https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=500&q=80" alt="Egusi soup" loading="lazy" />
+              <button class="recipe-card__save" aria-label="Save recipe">🤍</button>
+            </div>
+            <div class="recipe-card__body">
+              <h3 class="recipe-card__title">Egusi Soup, No Shortcuts</h3>
+              <div class="recipe-card__meta">
+                <span class="text-mono">1 hr 10 min</span><span>·</span><span>Medium</span><span>·</span><span>Serves 8</span>
+              </div>
+              <div class="recipe-card__author">
+                <img src="https://i.pravatar.cc/40?img=15" alt="" />
+                <span>Mama Ronke</span>
+              </div>
+            </div>
+          </article>
+          <article class="card recipe-card">
+            <div class="recipe-card__media">
+              <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&q=80" alt="Suya skewers" loading="lazy" />
+              <button class="recipe-card__save" aria-label="Save recipe">🤍</button>
+            </div>
+            <div class="recipe-card__body">
+              <h3 class="recipe-card__title">Suya Marinade, My Way</h3>
+              <div class="recipe-card__meta">
+                <span class="text-mono">30 min</span><span>·</span><span>Easy</span><span>·</span><span>Serves 4</span>
+              </div>
+              <div class="recipe-card__author">
+                <img src="https://i.pravatar.cc/40?img=8" alt="" />
+                <span>Yusuf Grills</span>
+              </div>
+            </div>
+          </article>
+          <article class="card recipe-card">
+            <div class="recipe-card__media">
+              <div class="skeleton" style="width:100%;height:100%"></div>
+            </div>
+            <div class="recipe-card__body">
+              <div class="skeleton" style="height:16px;width:70%;margin-bottom:8px"></div>
+              <div class="skeleton" style="height:12px;width:50%"></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SPONSORED (monetization slot, clearly labeled) ============ -->
+    <section class="container">
+      <div class="sponsored-strip">
+        <span class="badge badge--sponsored">Sponsored</span>
+        <img src="https://images.unsplash.com/photo-1584990347449-a0a1d1b23a13?w=200&q=80" alt="Non-stick cookware set" />
+        <div style="flex:1">
+          <h4>Non-stick pot sets built for daily jollof</h4>
+          <p class="text-sm text-muted">Kitchen Konnect NG — free delivery in Lagos this week.</p>
+        </div>
+        <a href="#" class="btn btn--secondary">Shop now</a>
+      </div>
+    </section>
+
+    <!-- ============ FEATURED CREATORS ============ -->
+    <section class="section" id="creators">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <p class="eyebrow">Cooks worth following</p>
+            <h2>Featured creators</h2>
+          </div>
+        </div>
+        <div class="creators-row">
+          <div class="creator-card"><img src="https://i.pravatar.cc/80?img=32" alt="" /><h4>Chef Amaka</h4><p class="text-muted">128k followers</p></div>
+          <div class="creator-card"><img src="https://i.pravatar.cc/80?img=15" alt="" /><h4>Mama Ronke</h4><p class="text-muted">94k followers</p></div>
+          <div class="creator-card"><img src="https://i.pravatar.cc/80?img=8" alt="" /><h4>Yusuf Grills</h4><p class="text-muted">61k followers</p></div>
+          <div class="creator-card"><img src="https://i.pravatar.cc/80?img=47" alt="" /><h4>Bisi Bakes</h4><p class="text-muted">55k followers</p></div>
+          <div class="creator-card"><img src="https://i.pravatar.cc/80?img=21" alt="" /><h4>Tunde's Kitchen</h4><p class="text-muted">40k followers</p></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="pot-rim pot-rim--onCream" role="presentation"></div>
+
+    <!-- ============ TESTIMONIALS ============ -->
+    <section class="section" style="background:var(--bg-surface)">
+      <div class="container">
+        <div class="section__head"><h2>What the community says</h2></div>
+        <div class="testimonial-grid">
+          <div class="testimonial-card">
+            <p>"I finally got my jollof party-ready thanks to a recipe I found here — the steps actually matched how my mother taught me."</p>
+            <div class="testimonial-card__author"><img src="https://i.pravatar.cc/40?img=5" alt="" /><div><strong>Funmi A.</strong><div class="text-sm text-muted">Lagos</div></div></div>
+          </div>
+          <div class="testimonial-card">
+            <p>"ChopCircle is the first app that actually gets Nigerian portion sizes and ingredient names right."</p>
+            <div class="testimonial-card__author"><img src="https://i.pravatar.cc/40?img=11" alt="" /><div><strong>Ifeanyi O.</strong><div class="text-sm text-muted">Abuja</div></div></div>
+          </div>
+          <div class="testimonial-card">
+            <p>"I started posting my okro soup process and now I have a small following asking me questions every week."</p>
+            <div class="testimonial-card__author"><img src="https://i.pravatar.cc/40?img=9" alt="" /><div><strong>Grace E.</strong><div class="text-sm text-muted">Port Harcourt</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ NEWSLETTER ============ -->
+    <section class="section">
+      <div class="container">
+        <div class="newsletter">
+          <div>
+            <h3>Get the week's best recipes</h3>
+            <p style="color:rgba(251,242,227,0.75)">One email a week. No spam, just good food.</p>
+          </div>
+          <form id="newsletter-form">
+            <input type="email" placeholder="you@example.com" aria-label="Email address" required />
+            <button class="btn btn--primary" type="submit">Subscribe</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div>
+        <a href="index.html" class="logo" style="color:var(--text-inverse)"><span class="logo__mark" aria-hidden="true"></span>ChopCircle</a>
+        <p style="margin-top:var(--space-3);opacity:0.7;max-width:32ch">The home for Nigerian home cooks and food lovers, everywhere.</p>
+      </div>
+      <div><h5>Explore</h5><ul><li><a href="pages/feed.html">Feed</a></li><li><a href="pages/recipes.html">Recipes</a></li><li><a href="#creators">Creators</a></li></ul></div>
+      <div><h5>Account</h5><ul><li><a href="pages/login.html">Log in</a></li><li><a href="pages/signup.html">Sign up</a></li><li><a href="pages/settings.html">Settings</a></li></ul></div>
+      <div><h5>Company</h5><ul><li><a href="#">About</a></li><li><a href="#">Advertise with us</a></li><li><a href="#">Privacy</a></li></ul></div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>© 2026 ChopCircle. Made with ❤️ in Nigeria.</span>
+      <span>Built for cooks, by cooks.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

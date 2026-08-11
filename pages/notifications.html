@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notifications — ChopCircle</title>
+  <meta name="description" content="See who's liked, commented, and followed you on ChopCircle." />
+  <link rel="icon" href="../assets/logos/favicon.svg" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#E8542A" />
+  <link rel="apple-touch-icon" href="../assets/logos/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="logo">
+        <span class="logo__mark" aria-hidden="true"></span>
+        ChopCircle
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="feed.html">Feed</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="chat.html">Messages<span class="messages-badge hidden"></span></a>
+        <a href="../index.html#categories">Categories</a>
+        <a href="../index.html#creators">Creators</a>
+      </nav>
+      <div class="header-actions" style="margin-left:auto">
+        <button class="btn btn--ghost" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary" href="login.html">Log in</a>
+          <a class="btn btn--primary" href="signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden">
+          <div class="notif-bell-wrap">
+            <button class="notif-bell" id="notif-bell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+              🔔<span class="badge hidden" id="notif-badge">0</span>
+            </button>
+            <div class="dropdown-panel notif-dropdown hidden" id="notif-dropdown" role="menu" aria-label="Notifications">
+              <div class="dropdown-panel__header"><span>Notifications</span><a href="notifications.html">See all</a></div>
+              <ul class="notif-list" id="notif-list"></ul>
+              <p class="notif-empty text-muted text-sm hidden" id="notif-empty">No notifications yet.</p>
+            </div>
+          </div>
+          <div class="avatar-wrap">
+            <button class="avatar-btn" id="avatar-btn" aria-label="Account menu" aria-haspopup="true" aria-expanded="false">
+              <img id="header-avatar" src="" alt="" />
+            </button>
+            <div class="dropdown-panel account-dropdown hidden" id="account-dropdown" role="menu" aria-label="Account">
+              <a href="profile.html" id="account-profile-link" class="account-profile-link" role="menuitem">My profile</a>
+              <a href="chat.html" role="menuitem">Messages</a>
+              <button type="button" id="logout-btn" class="logout-btn" role="menuitem">Log out</button>
+            </div>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburger-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-drawer">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+    <button class="mobile-drawer__backdrop" aria-label="Close menu" tabindex="-1"></button>
+    <nav class="mobile-drawer__panel" aria-label="Mobile">
+      <div class="mobile-drawer__links">
+        <a href="feed.html">Feed</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="chat.html">Messages<span class="messages-badge hidden"></span></a>
+        <a href="../index.html#categories">Categories</a>
+        <a href="../index.html#creators">Creators</a>
+      </div>
+      <div class="mobile-drawer__actions">
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary btn--full btn--lg" href="login.html">Log in</a>
+          <a class="btn btn--primary btn--full btn--lg" href="signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden mobile-account-links">
+          <a href="profile.html" class="account-profile-link">My profile</a>
+          <a href="notifications.html" aria-current="page">Notifications</a>
+          <button type="button" class="logout-btn">Log out</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <main id="main">
+    <div class="notifications-page">
+      <div class="container">
+        <div class="notifications-page__head">
+          <h1>Notifications</h1>
+        </div>
+
+        <div class="card">
+          <ul class="notif-list" id="notif-page-list" aria-live="polite">
+            <li class="notif-item"><div class="notif-item__link"><div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skeleton" style="height:12px;width:30%"></div></div></div></li>
+            <li class="notif-item"><div class="notif-item__link"><div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="height:14px;width:50%;margin-bottom:8px"></div><div class="skeleton" style="height:12px;width:30%"></div></div></div></li>
+          </ul>
+          <div class="empty-state hidden" id="notif-page-empty">
+            <h4>No notifications yet</h4>
+            <p>Likes, comments, and new followers will show up here.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="../js/notifications/notifications-page.js"></script>
+</body>
+</html>

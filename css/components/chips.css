@@ -1,0 +1,51 @@
+/* ChopCircle — Category chips (styled like small spice-jar labels) */
+.chip-row {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scrollbar-width: none;
+}
+.chip-row::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-pill) var(--radius-pill);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.chip::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--brand-accent);
+}
+.chip:hover { border-color: var(--brand-primary); color: var(--text-primary); }
+.chip[aria-pressed="true"] {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: var(--text-on-brand);
+}
+.chip[aria-pressed="true"]::before { background: var(--text-on-brand); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.badge--sponsored { background: var(--color-egusi-300); color: var(--color-charcoal-700); }
+.badge--trending { background: var(--color-pepper-100); color: var(--color-pepper-700); }

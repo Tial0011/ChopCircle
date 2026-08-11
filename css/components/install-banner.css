@@ -1,0 +1,64 @@
+/* ChopCircle — Install prompt banner (Phase 9)
+   Injected by js/utils/pwa.js, not present in any page's static markup —
+   see that file for why. Bottom sheet on mobile, floating card on desktop. */
+.install-banner {
+  position: fixed;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 420px;
+  margin: 0 auto;
+  transform: translateY(calc(100% + var(--space-6)));
+  opacity: 0;
+  transition: transform var(--duration-slow) var(--ease-out), opacity var(--duration-slow) var(--ease-out);
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+}
+.install-banner.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.install-banner__icon {
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+}
+
+.install-banner__text { flex: 1; min-width: 0; }
+.install-banner__title {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.install-banner__body {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: var(--leading-snug);
+}
+
+.install-banner__actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+.install-banner__actions .btn {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 480px) {
+  .install-banner { flex-wrap: wrap; }
+  .install-banner__actions { flex-direction: row; width: 100%; margin-left: calc(48px + var(--space-3)); }
+  .install-banner__actions .btn { flex: 1; }
+}

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feed — ChopCircle</title>
+  <meta name="description" content="See what the ChopCircle community is cooking right now — follow, like, and comment on posts from home cooks." />
+  <link rel="icon" href="../assets/logos/favicon.svg" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#E8542A" />
+  <link rel="apple-touch-icon" href="../assets/logos/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="logo">
+        <span class="logo__mark" aria-hidden="true"></span>
+        ChopCircle
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="feed.html" aria-current="page">Feed</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="chat.html">Messages<span class="messages-badge hidden"></span></a>
+        <a href="../index.html#categories">Categories</a>
+        <a href="../index.html#creators">Creators</a>
+      </nav>
+      <div class="header-search" role="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" id="recipe-search" placeholder="Search jollof, egusi, small chops…" aria-label="Search recipes" />
+      </div>
+      <div class="header-actions">
+        <button class="btn btn--ghost" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+        <a class="btn btn--primary" href="recipe-form.html">Share a recipe</a>
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary" href="login.html">Log in</a>
+          <a class="btn btn--primary" href="signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden">
+          <div class="notif-bell-wrap">
+            <button class="notif-bell" id="notif-bell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+              🔔<span class="badge hidden" id="notif-badge">0</span>
+            </button>
+            <div class="dropdown-panel notif-dropdown hidden" id="notif-dropdown" role="menu" aria-label="Notifications">
+              <div class="dropdown-panel__header"><span>Notifications</span><a href="notifications.html">See all</a></div>
+              <ul class="notif-list" id="notif-list"></ul>
+              <p class="notif-empty text-muted text-sm hidden" id="notif-empty">No notifications yet.</p>
+            </div>
+          </div>
+          <div class="avatar-wrap">
+            <button class="avatar-btn" id="avatar-btn" aria-label="Account menu" aria-haspopup="true" aria-expanded="false">
+              <img id="header-avatar" src="" alt="" />
+            </button>
+            <div class="dropdown-panel account-dropdown hidden" id="account-dropdown" role="menu" aria-label="Account">
+              <a href="profile.html" id="account-profile-link" class="account-profile-link" role="menuitem">My profile</a>
+              <a href="chat.html" role="menuitem">Messages</a>
+              <button type="button" id="logout-btn" class="logout-btn" role="menuitem">Log out</button>
+            </div>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburger-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-drawer">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+    <button class="mobile-drawer__backdrop" aria-label="Close menu" tabindex="-1"></button>
+    <nav class="mobile-drawer__panel" aria-label="Mobile">
+      <div class="mobile-drawer__search" role="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Search jollof, egusi, small chops…" aria-label="Search recipes" />
+      </div>
+      <div class="mobile-drawer__links">
+        <a href="feed.html" aria-current="page">Feed</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="chat.html">Messages<span class="messages-badge hidden"></span></a>
+        <a href="../index.html#categories">Categories</a>
+        <a href="../index.html#creators">Creators</a>
+      </div>
+      <div class="mobile-drawer__actions">
+        <a class="btn btn--primary btn--full btn--lg" href="recipe-form.html">Share a recipe</a>
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary btn--full btn--lg" href="login.html">Log in</a>
+          <a class="btn btn--primary btn--full btn--lg" href="signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden mobile-account-links">
+          <a href="profile.html" class="account-profile-link">My profile</a>
+          <a href="notifications.html">Notifications</a>
+          <button type="button" class="logout-btn">Log out</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <main id="main">
+    <section class="section feed-page">
+      <div class="container feed-page__layout">
+        <div class="feed-page__main">
+          <div class="section__head">
+            <div>
+              <p class="eyebrow">Your circle</p>
+              <h1>Feed</h1>
+            </div>
+          </div>
+
+          <form class="card composer hidden" id="composer">
+            <div class="field">
+              <label for="post-caption" class="sr-only">What are you cooking?</label>
+              <textarea id="post-caption" rows="3" placeholder="What are you cooking today?" required></textarea>
+            </div>
+            <div class="field">
+              <label for="post-image-url" class="sr-only">Image URL (optional)</label>
+              <input type="url" id="post-image-url" placeholder="Paste an image URL (optional)" />
+            </div>
+            <div class="composer__actions">
+              <button type="submit" class="btn btn--primary">Post</button>
+            </div>
+          </form>
+
+          <div class="card composer-logged-out hidden" id="composer-logged-out">
+            <p>Log in to share what you're cooking with your circle.</p>
+            <a href="login.html?redirect=%2Fpages%2Ffeed.html" class="btn btn--primary">Log in</a>
+          </div>
+
+          <div class="feed-list" id="feed-list" aria-live="polite">
+            <!-- Populated by js/feed/feed-page.js. Skeleton cards render first paint. -->
+            <article class="card post-card"><div class="post-card__header"><div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="height:14px;width:40%;margin-bottom:6px"></div><div class="skeleton" style="height:10px;width:25%"></div></div></div><div class="post-card__media"><div class="skeleton" style="width:100%;height:100%"></div></div></article>
+            <article class="card post-card"><div class="post-card__header"><div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="height:14px;width:40%;margin-bottom:6px"></div><div class="skeleton" style="height:10px;width:25%"></div></div></div><div class="post-card__body"><div class="skeleton" style="height:12px;width:90%;margin-bottom:6px"></div><div class="skeleton" style="height:12px;width:70%"></div></div></article>
+          </div>
+
+          <div class="empty-state hidden" id="feed-empty">
+            <h4>No posts yet</h4>
+            <p>Be the first to share what you're cooking.</p>
+          </div>
+
+          <div class="feed-page__load-more">
+            <button class="btn btn--secondary" id="load-more" hidden>Load more</button>
+          </div>
+        </div>
+
+        <aside class="feed-page__aside">
+          <div class="card feed-page__tip">
+            <h4>New here?</h4>
+            <p class="text-sm text-muted">Follow a few creators from the <a href="../index.html#creators">Featured creators</a> section to fill your feed faster.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div>
+        <a href="../index.html" class="logo" style="color:var(--text-inverse)"><span class="logo__mark" aria-hidden="true"></span>ChopCircle</a>
+        <p style="margin-top:var(--space-3);opacity:0.7;max-width:32ch">The home for Nigerian home cooks and food lovers, everywhere.</p>
+      </div>
+      <div><h5>Explore</h5><ul><li><a href="feed.html">Feed</a></li><li><a href="recipes.html">Recipes</a></li><li><a href="../index.html#creators">Creators</a></li></ul></div>
+      <div><h5>Account</h5><ul><li><a href="login.html">Log in</a></li><li><a href="signup.html">Sign up</a></li><li><a href="settings.html">Settings</a></li></ul></div>
+      <div><h5>Company</h5><ul><li><a href="#">About</a></li><li><a href="#">Advertise with us</a></li><li><a href="#">Privacy</a></li></ul></div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>© 2026 ChopCircle. Made with ❤️ in Nigeria.</span>
+      <span>Built for cooks, by cooks.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/feed/feed-page.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+/* ChopCircle — Profile (pages/profile.html, pages/profile-edit.html) */
+
+.profile-cover {
+  height: 220px;
+  background: var(--bg-surface-sunken);
+  overflow: hidden;
+}
+.profile-cover img { width: 100%; height: 100%; object-fit: cover; }
+
+.profile-header {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-5);
+  padding: 0 var(--space-5) var(--space-6);
+  margin-top: -56px;
+}
+.profile-header__avatar {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid var(--bg-page);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-md);
+  flex-shrink: 0;
+}
+.profile-header__info { flex: 1; min-width: 0; padding-bottom: var(--space-2); }
+.profile-header__info h1 { margin-bottom: var(--space-1); }
+.profile-header__info #profile-bio { max-width: 60ch; }
+
+.profile-header__stats {
+  display: flex;
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+  font-family: var(--font-mono);
+}
+.profile-header__stats strong { display: block; font-size: var(--text-xl); color: var(--text-primary); }
+.profile-header__stats span { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.profile-header__actions {
+  display: flex;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  flex-shrink: 0;
+}
+
+#profile-tabs { margin: var(--space-2) 0 var(--space-6); }
+
+.profile-tab__load-more { display: flex; justify-content: center; margin-top: var(--space-6); }
+
+#tab-posts .feed-list { max-width: 640px; margin: 0 auto; }
+
+/* ---- Edit profile (pages/profile-edit.html) ---- */
+.profile-edit__container { max-width: 560px; }
+.profile-edit__container textarea { width: 100%; resize: vertical; }
+
+@media (max-width: 640px) {
+  .profile-cover { height: 140px; }
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: -48px;
+  }
+  .profile-header__avatar { width: 96px; height: 96px; border-width: 4px; }
+  .profile-header__actions { padding-bottom: 0; width: 100%; }
+  .profile-header__actions .btn { flex: 1; }
+  .profile-header__stats { gap: var(--space-5); }
+}

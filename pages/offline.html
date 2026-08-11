@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You're offline — ChopCircle</title>
+  <meta name="description" content="ChopCircle can't reach the network right now." />
+  <meta name="theme-color" content="#E8542A" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" href="../assets/logos/favicon.svg" />
+  <link rel="apple-touch-icon" href="../assets/logos/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <!-- Deliberately not using .site-header/.site-footer here: this page is
+       served BY the service worker when the network is unreachable, so it
+       needs to render correctly with only the shell-cached assets (see
+       service-worker.js's SHELL_ASSETS list) — same "immersive, minimal"
+       reasoning login.html/signup.html use for auth-layout, just for a
+       different reason (guaranteed offline-availability, not focus). -->
+  <main class="offline-layout">
+    <a href="../index.html" class="logo offline-layout__logo">
+      <span class="logo__mark" aria-hidden="true"></span>
+      ChopCircle
+    </a>
+    <div class="offline-layout__card">
+      <p class="offline-layout__eyebrow">No connection</p>
+      <h1>You're offline</h1>
+      <p class="offline-layout__body">
+        This page hasn't been saved for offline use yet. Reconnect and try
+        again, or head back to a page you've already visited — those stay
+        available even without a connection.
+      </p>
+      <div class="offline-layout__actions">
+        <button type="button" class="btn btn--primary" id="offline-retry">Try again</button>
+        <a class="btn btn--secondary" href="../index.html">Go to home</a>
+      </div>
+    </div>
+    <div class="pot-rim pot-rim--onCream" aria-hidden="true"></div>
+  </main>
+
+  <script type="module">
+    // offline.html has no page-controller module of its own to piggyback
+    // on (every other page calls registerServiceWorker()/initInstallPrompt()
+    // from js/utils/pwa.js alongside their existing initTheme()/
+    // initMobileNav() calls — see HANDOFF.md). This is the one page where
+    // that pair is invoked directly instead.
+    import { registerServiceWorker } from "../js/utils/pwa.js";
+    registerServiceWorker();
+    document.getElementById("offline-retry")?.addEventListener("click", () => location.reload());
+  </script>
+</body>
+</html>

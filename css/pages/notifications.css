@@ -1,0 +1,20 @@
+/* ChopCircle — Notifications page (Phase 10)
+   Full-history equivalent of the header bell dropdown. Row styling
+   (.notif-item etc.) lives in components/header-auth.css and is shared
+   with the dropdown so the two surfaces can't drift apart on layout —
+   this file only owns the page shell around that list. */
+
+.notifications-page {
+  padding: var(--space-6) 0 var(--space-9);
+}
+.notifications-page .container { max-width: 640px; }
+
+.notifications-page__head {
+  margin-bottom: var(--space-5);
+}
+
+.notifications-page .notif-list {
+  max-height: none;
+}
+
+.notifications-page .card { padding: 0; }

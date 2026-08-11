@@ -1,0 +1,29 @@
+/* ==========================================================================
+   ChopCircle Signature Element — the "pot-rim" divider
+   A repeating scalloped arc, like the rim of a cooking pot or a plate edge,
+   used between major page sections instead of a straight rule or a generic
+   decorative wave. Implemented as a tiling background-image (no JS/SVG file
+   dependency) so it scales to any container width.
+   ========================================================================== */
+
+.pot-rim {
+  height: 28px;
+  width: 100%;
+  background-repeat: repeat-x;
+  background-size: 56px 28px;
+  background-position: center top;
+}
+
+.pot-rim--onCream {
+  background-image: radial-gradient(circle at 28px 0, transparent 26px, var(--color-cream-300) 27px);
+}
+
+.pot-rim--onSurface {
+  background-image: radial-gradient(circle at 28px 0, transparent 26px, var(--bg-surface) 27px);
+}
+
+.pot-rim--inverse {
+  background-image: radial-gradient(circle at 28px -2px, transparent 26px, var(--bg-inverse) 27px);
+}
+
+.pot-rim--flip { transform: rotate(180deg); }

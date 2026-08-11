@@ -1,0 +1,39 @@
+rules_version = '2';
+
+// ChopCircle — Storage rules. Public read (food photos are the product),
+// authenticated write, size- and type-limited to prevent abuse.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isValidImage() {
+      return request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /users/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == uid && isValidImage();
+    }
+
+    match /recipes/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == uid && isValidImage();
+    }
+
+    match /posts/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == uid && isValidImage();
+    }
+
+    match /chats/{chatId}/{fileName} {
+      allow read, write: if isSignedIn() && isValidImage();
+      // Tightened once chat participant lookups are available in Storage rules
+      // (requires a Firestore get() call — see chats rule in firestore.rules
+      // for the pattern to mirror here).
+    }
+  }
+}

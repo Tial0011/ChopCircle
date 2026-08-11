@@ -1,0 +1,144 @@
+/* ChopCircle — Chat (pages/chat.html)
+   A full-height two-pane layout (conversation list + thread) rather than
+   the .container-based article layout every other page uses — deliberate,
+   same "immersive, no footer" exception login.html/signup.html already
+   make for auth-layout. See HANDOFF.md. */
+
+.chat-page {
+  height: calc(100vh - var(--header-height));
+  overflow: hidden;
+}
+
+.chat-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  height: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+}
+
+/* ---- Sidebar / conversation list ---- */
+.chat-sidebar {
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  height: 100%;
+}
+.chat-sidebar__header {
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.chat-sidebar__header h1 { font-size: var(--text-xl); }
+
+.chat-list { display: flex; flex-direction: column; }
+.chat-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+button.chat-list__item:hover, button.chat-list__item[aria-current="true"] { background: var(--bg-surface-sunken); }
+.chat-list__item img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.chat-list__info { min-width: 0; flex: 1; }
+.chat-list__row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+.chat-list__name { font-weight: 600; font-size: var(--text-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-list__time { font-size: var(--text-xs); color: var(--text-muted); font-family: var(--font-mono); flex-shrink: 0; }
+.chat-list__preview { font-size: var(--text-sm); color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+#chat-list-empty { padding: var(--space-8) var(--space-5); }
+
+/* ---- Thread ---- */
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+#chat-thread-empty { align-items: center; justify-content: center; }
+
+.chat-thread__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.chat-thread__back { display: none; font-size: var(--text-lg); }
+.chat-thread__peer { display: flex; align-items: center; gap: var(--space-3); color: inherit; }
+.chat-thread__peer:hover strong { color: var(--brand-primary); }
+.chat-thread__peer img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.message { display: flex; max-width: 72%; }
+.message--mine { align-self: flex-end; justify-content: flex-end; }
+.message--theirs { align-self: flex-start; }
+
+.message__bubble {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.message--mine .message__bubble {
+  background: var(--brand-primary);
+  color: var(--text-on-brand);
+  border-bottom-right-radius: var(--radius-sm);
+}
+.message--theirs .message__bubble {
+  background: var(--bg-surface-sunken);
+  color: var(--text-primary);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.message__meta {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.message-composer {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.message-composer input {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+.message-composer input:focus { border-color: var(--brand-primary); }
+
+@media (max-width: 768px) {
+  .chat-layout { grid-template-columns: 1fr; border-left: 0; border-right: 0; }
+  .chat-sidebar { border-right: 0; }
+  .chat-thread__back { display: inline-flex; }
+
+  /* data-view (set by chat-page.js) decides which single pane shows */
+  .chat-layout[data-view="list"] .chat-thread { display: none; }
+  .chat-layout[data-view="thread"] .chat-sidebar { display: none; }
+  .message { max-width: 85%; }
+}

@@ -1,0 +1,89 @@
+rules_version = '2';
+
+// ChopCircle — baseline Firestore Security Rules (Phase 1 draft)
+// Principle: public read for content people came here to browse (recipes,
+// posts, profiles, categories); writes always require auth AND ownership;
+// chats/notifications are private to their participants.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid);
+      allow delete: if false; // account deletion goes through a Cloud Function (future)
+    }
+
+    match /recipes/{recipeId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+    }
+
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+    }
+
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+    }
+
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /follows/{followId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.followerId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.followerId == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /savedCollections/{collectionId} {
+      allow read: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.recipientId == request.auth.uid;
+      allow create: if isSignedIn(); // written by the actor on behalf of the recipient
+      allow update: if isSignedIn() && resource.data.recipientId == request.auth.uid; // mark read
+      allow delete: if isSignedIn() && resource.data.recipientId == request.auth.uid;
+    }
+
+    match /chats/{chatId} {
+      allow read, update: if isSignedIn() && request.auth.uid in resource.data.participantIds;
+      allow create: if isSignedIn() && request.auth.uid in request.resource.data.participantIds;
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds;
+        allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid
+          && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds;
+        // status transitions (sent -> seen) by either participant, not just the sender
+        allow update: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds;
+        allow delete: if false;
+      }
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if false; // seeded/managed via Firebase console or an admin Cloud Function
+    }
+  }
+}

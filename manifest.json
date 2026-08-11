@@ -1,0 +1,51 @@
+{
+  "name": "ChopCircle — Discover, Cook, Share Nigerian Food",
+  "short_name": "ChopCircle",
+  "description": "A social cookbook for Nigerian home cooks — discover recipes, share what you cook, and build your circle.",
+  "id": "./index.html",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#FBF2E3",
+  "theme_color": "#E8542A",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["food", "lifestyle", "social"],
+  "icons": [
+    { "src": "assets/icons/icon-72.png", "sizes": "72x72", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/maskable-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Feed",
+      "short_name": "Feed",
+      "description": "See what the ChopCircle community is cooking right now",
+      "url": "./pages/feed.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Share a recipe",
+      "short_name": "New recipe",
+      "description": "Post a new recipe to your ChopCircle",
+      "url": "./pages/recipe-form.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Messages",
+      "short_name": "Messages",
+      "description": "Open your ChopCircle conversations",
+      "url": "./pages/chat.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

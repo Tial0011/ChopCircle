@@ -1,0 +1,146 @@
+/* ==========================================================================
+   ChopCircle — Design Tokens
+   Single source of truth for color, type, spacing, radius, shadow, motion.
+   Never hardcode a hex/px value in a component file — reference a token.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand palette ---- */
+  --color-pepper-50:  #FDECE4;
+  --color-pepper-100: #FAD2C0;
+  --color-pepper-300: #F09466;
+  --color-pepper-500: #E8542A; /* primary */
+  --color-pepper-600: #D0431C;
+  --color-pepper-700: #A83617;
+
+  --color-palm-50:  #E7F2E9;
+  --color-palm-300: #7FB98A;
+  --color-palm-500: #3D7A46; /* fresh green */
+  --color-palm-600: #2F6236;
+
+  --color-egusi-300: #EAC983;
+  --color-egusi-500: #D9A441; /* golden accent */
+  --color-egusi-600: #B98626;
+
+  --color-cream-100: #FFFDF9;
+  --color-cream-300: #FBF2E3; /* base surface, light mode */
+  --color-cream-500: #F3E4CB;
+
+  --color-charcoal-300: #7A716A;
+  --color-charcoal-500: #4A4038;
+  --color-charcoal-700: #2B241E; /* base surface, dark mode / primary text */
+  --color-charcoal-900: #1A1512;
+
+  --color-white: #FFFFFF;
+  --color-error: #C13B2A;
+  --color-success: #3D7A46;
+
+  /* ---- Semantic tokens (light mode default) ---- */
+  --bg-page: var(--color-cream-300);
+  --bg-surface: var(--color-white);
+  --bg-surface-sunken: var(--color-cream-100);
+  --bg-inverse: var(--color-charcoal-700);
+
+  --text-primary: var(--color-charcoal-700);
+  --text-secondary: var(--color-charcoal-500);
+  --text-muted: var(--color-charcoal-300);
+  --text-inverse: var(--color-cream-100);
+  --text-on-brand: var(--color-white);
+
+  --border-subtle: rgba(43, 36, 30, 0.08);
+  --border-default: rgba(43, 36, 30, 0.14);
+
+  --brand-primary: var(--color-pepper-500);
+  --brand-primary-hover: var(--color-pepper-600);
+  --brand-secondary: var(--color-palm-500);
+  --brand-accent: var(--color-egusi-500);
+
+  --focus-ring: 0 0 0 3px rgba(232, 84, 42, 0.35);
+
+  /* ---- Elevation ---- */
+  --shadow-sm: 0 1px 2px rgba(26, 21, 18, 0.06), 0 1px 1px rgba(26, 21, 18, 0.04);
+  --shadow-md: 0 6px 16px rgba(26, 21, 18, 0.08), 0 2px 6px rgba(26, 21, 18, 0.05);
+  --shadow-lg: 0 16px 40px rgba(26, 21, 18, 0.14), 0 4px 12px rgba(26, 21, 18, 0.06);
+  --shadow-glass: 0 8px 32px rgba(26, 21, 18, 0.18);
+
+  /* ---- Radius ---- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* ---- Spacing scale (4px base) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* ---- Type ---- */
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 3rem;
+  --text-5xl: 3.75rem;
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.6;
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 360ms;
+
+  /* ---- Layout ---- */
+  --container-max: 1280px;
+  --header-height: 72px;
+  --z-header: 100;
+  --z-dropdown: 300;
+  --z-modal: 500;
+  --z-toast: 600;
+}
+
+/* ---- Dark mode ---- */
+[data-theme="dark"] {
+  --bg-page: var(--color-charcoal-900);
+  --bg-surface: var(--color-charcoal-700);
+  --bg-surface-sunken: #221C17;
+  --bg-inverse: var(--color-cream-300);
+
+  --text-primary: var(--color-cream-100);
+  --text-secondary: #D8CFC5;
+  --text-muted: #8F857C;
+  --text-inverse: var(--color-charcoal-700);
+
+  --border-subtle: rgba(251, 242, 227, 0.08);
+  --border-default: rgba(251, 242, 227, 0.14);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

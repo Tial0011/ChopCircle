@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages — ChopCircle</title>
+  <meta name="description" content="Message other cooks in your ChopCircle." />
+  <link rel="icon" href="../assets/logos/favicon.svg" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#E8542A" />
+  <link rel="apple-touch-icon" href="../assets/logos/apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="logo">
+        <span class="logo__mark" aria-hidden="true"></span>
+        ChopCircle
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="feed.html">Feed</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="chat.html" aria-current="page">Messages<span class="messages-badge hidden"></span></a>
+        <a href="../index.html#categories">Categories</a>
+        <a href="../index.html#creators">Creators</a>
+      </nav>
+      <div class="header-actions" style="margin-left:auto">
+        <button class="btn btn--ghost" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary" href="login.html">Log in</a>
+          <a class="btn btn--primary" href="signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden">
+          <div class="notif-bell-wrap">
+            <button class="notif-bell" id="notif-bell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+              🔔<span class="badge hidden" id="notif-badge">0</span>
+            </button>
+            <div class="dropdown-panel notif-dropdown hidden" id="notif-dropdown" role="menu" aria-label="Notifications">
+              <div class="dropdown-panel__header"><span>Notifications</span><a href="notifications.html">See all</a></div>
+              <ul class="notif-list" id="notif-list"></ul>
+              <p class="notif-empty text-muted text-sm hidden" id="notif-empty">No notifications yet.</p>
+            </div>
+          </div>
+          <div class="avatar-wrap">
+            <button class="avatar-btn" id="avatar-btn" aria-label="Account menu" aria-haspopup="true" aria-expanded="false">
+              <img id="header-avatar" src="" alt="" />
+            </button>
+            <div class="dropdown-panel account-dropdown hidden" id="account-dropdown" role="menu" aria-label="Account">
+              <a href="profile.html" id="account-profile-link" class="account-profile-link" role="menuitem">My profile</a>
+              <a href="chat.html" role="menuitem">Messages</a>
+              <button type="button" id="logout-btn" class="logout-btn" role="menuitem">Log out</button>
+            </div>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburger-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-drawer">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+    <button class="mobile-drawer__backdrop" aria-label="Close menu" tabindex="-1"></button>
+    <nav class="mobile-drawer__panel" aria-label="Mobile">
+      <div class="mobile-drawer__links">
+        <a href="feed.html">Feed</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="chat.html" aria-current="page">Messages<span class="messages-badge hidden"></span></a>
+        <a href="../index.html#categories">Categories</a>
+        <a href="../index.html#creators">Creators</a>
+      </div>
+      <div class="mobile-drawer__actions">
+        <div class="auth-guest hidden">
+          <a class="btn btn--secondary btn--full btn--lg" href="login.html">Log in</a>
+          <a class="btn btn--primary btn--full btn--lg" href="signup.html">Join free</a>
+        </div>
+        <div class="auth-user hidden mobile-account-links">
+          <a href="profile.html" class="account-profile-link">My profile</a>
+          <a href="notifications.html">Notifications</a>
+          <button type="button" class="logout-btn">Log out</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <main id="main">
+    <div class="chat-page">
+      <div class="chat-layout" id="chat-layout" data-view="list">
+
+        <aside class="chat-sidebar">
+          <div class="chat-sidebar__header">
+            <h1>Messages</h1>
+          </div>
+          <div id="chat-list" class="chat-list" aria-live="polite">
+            <div class="chat-list__item chat-list__item--skeleton"><div class="skeleton" style="width:48px;height:48px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skeleton" style="height:12px;width:80%"></div></div></div>
+            <div class="chat-list__item chat-list__item--skeleton"><div class="skeleton" style="width:48px;height:48px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="height:14px;width:50%;margin-bottom:8px"></div><div class="skeleton" style="height:12px;width:70%"></div></div></div>
+          </div>
+          <div class="empty-state hidden" id="chat-list-empty">
+            <h4>No conversations yet</h4>
+            <p>Message a cook from their profile to start one.</p>
+          </div>
+        </aside>
+
+        <section class="chat-thread" id="chat-thread-empty">
+          <div class="empty-state">
+            <h4>Select a conversation</h4>
+            <p>Pick someone from the list to see your messages.</p>
+          </div>
+        </section>
+
+        <section class="chat-thread hidden" id="chat-thread">
+          <header class="chat-thread__header">
+            <button class="chat-thread__back" id="chat-thread-back" aria-label="Back to conversations">←</button>
+            <a id="chat-thread-profile-link" href="#" class="chat-thread__peer">
+              <img id="chat-thread-avatar" src="" alt="" />
+              <strong id="chat-thread-name"></strong>
+            </a>
+          </header>
+
+          <div class="message-list" id="message-list" aria-live="polite"></div>
+
+          <form class="message-composer" id="message-form">
+            <input type="text" id="message-input" placeholder="Write a message…" aria-label="Write a message" autocomplete="off" required />
+            <button type="submit" class="btn btn--primary btn--icon" aria-label="Send message">➤</button>
+          </form>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="../js/chat/chat-page.js"></script>
+</body>
+</html>

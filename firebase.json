@@ -1,0 +1,28 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "functions/**",
+      "MANUAL_SETUP.md",
+      "PLANNING.md",
+      "HANDOFF.md",
+      "README.md"
+    ]
+  },
+  "firestore": {
+    "rules": "firebase/firestore.rules"
+  },
+  "storage": {
+    "rules": "firebase/storage.rules"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": ["node_modules", ".git", "*.log"]
+    }
+  ]
+}

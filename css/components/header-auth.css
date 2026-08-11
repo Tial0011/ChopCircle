@@ -1,0 +1,188 @@
+/* ChopCircle — Auth-aware header controls (Phase 10)
+   Backs the #auth-guest / #auth-user markup every page with a
+   .site-header now ships (see HANDOFF.md) and js/utils/header.js's
+   initAuthHeader(). Desktop-only: the notification bell + avatar dropdown
+   live in .header-actions; the mobile drawer gets a plain link list
+   instead (.mobile-account-links, below) rather than a duplicate set of
+   these same element IDs — see HANDOFF.md's note on why. */
+
+.auth-guest,
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* ---- Notification bell ---- */
+.notif-bell-wrap,
+.avatar-wrap {
+  position: relative;
+}
+
+.notif-bell {
+  position: relative;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+.notif-bell:hover { color: var(--text-primary); background: var(--bg-surface-sunken); }
+
+.notif-bell-wrap .badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--brand-primary);
+  color: var(--text-on-brand);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 1;
+}
+
+/* ---- Avatar ---- */
+.avatar-btn {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.avatar-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ---- Shared dropdown shell (notif bell + avatar menu) ---- */
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: var(--z-dropdown);
+  min-width: 220px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.dropdown-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.dropdown-panel__header a {
+  font-weight: 600;
+  font-size: var(--text-xs);
+  color: var(--brand-primary);
+}
+
+.account-dropdown {
+  min-width: 180px;
+  padding: var(--space-2);
+}
+.account-dropdown a,
+.account-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.account-dropdown a:hover,
+.account-dropdown button:hover { background: var(--bg-surface-sunken); }
+.account-dropdown #logout-btn { color: var(--color-error); }
+
+/* ---- Notification list rows (bell dropdown + notifications.html) ---- */
+.notif-dropdown { width: 340px; max-width: 90vw; }
+.notif-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+.notif-empty { padding: var(--space-5) var(--space-4); text-align: center; }
+
+.notif-item { border-bottom: 1px solid var(--border-subtle); }
+.notif-item:last-child { border-bottom: none; }
+.notif-item__link {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+.notif-item--unread .notif-item__link { background: var(--bg-surface-sunken); }
+.notif-item__link:hover { background: var(--bg-surface-sunken); }
+.notif-item__link img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.notif-item__body { min-width: 0; flex: 1; }
+.notif-item__body p {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  line-height: var(--leading-snug);
+  margin-bottom: 2px;
+}
+.notif-item__dot {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-4);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+}
+
+/* ---- Messages nav-link badge ---- */
+.nav-links a,
+.mobile-drawer__links a {
+  position: relative;
+}
+.messages-badge {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  vertical-align: middle;
+}
+
+/* ---- Mobile drawer auth block (plain link list, no dropdowns) ---- */
+.mobile-account-links {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-1);
+}
+.mobile-account-links a,
+.mobile-account-links button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-3) var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.mobile-account-links .logout-btn { color: var(--color-error); }

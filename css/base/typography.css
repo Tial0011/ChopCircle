@@ -1,0 +1,37 @@
+/* ChopCircle — Typography */
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+h1 { font-size: clamp(2.25rem, 4vw + 1rem, var(--text-5xl)); }
+h2 { font-size: clamp(1.75rem, 2.4vw + 1rem, var(--text-4xl)); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); font-family: var(--font-body); font-weight: 700; }
+
+p { font-size: var(--text-base); color: var(--text-secondary); }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
+.text-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.text-muted { color: var(--text-muted); }
+.text-xs { font-size: var(--text-xs); }
+.text-sm { font-size: var(--text-sm); }
+.text-lg { font-size: var(--text-lg); }
+
+.lede {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  line-height: var(--leading-snug);
+  max-width: 52ch;
+}
