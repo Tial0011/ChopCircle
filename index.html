@@ -342,75 +342,44 @@
             </div>
             <a href="pages/recipes.html" class="btn btn--ghost">See all →</a>
           </div>
-          <div class="recipe-grid" id="trending-recipes" aria-live="polite">
-            <!-- Rendered by js/feed/render-trending.js (renderTrending()) — static fallback below for first paint -->
+          <div class="recipe-grid" id="trending-recipes" aria-live="polite" aria-busy="true">
+            <!-- Rendered by js/feed/render-trending.js (renderTrending()) — this is a loading
+                 skeleton, not fake data, so a slow/no-network first paint never shows recipes
+                 that aren't real. renderTrending() replaces this on both success and failure. -->
             <article class="card recipe-card">
               <div class="recipe-card__media">
-                <img
-                  src="https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=500&q=80"
-                  alt="Pounded yam and soup"
-                  loading="lazy"
-                />
-                <button class="recipe-card__save" aria-label="Save recipe">
-                  🤍
-                </button>
+                <div class="skeleton" style="width: 100%; height: 100%"></div>
               </div>
               <div class="recipe-card__body">
-                <h3 class="recipe-card__title">Soft Pounded Yam, Done Right</h3>
-                <div class="recipe-card__meta">
-                  <span class="text-mono">45 min</span><span>·</span
-                  ><span>Medium</span><span>·</span><span>Serves 6</span>
-                </div>
-                <div class="recipe-card__author">
-                  <img src="https://i.pravatar.cc/40?img=32" alt="" />
-                  <span>Chef Amaka</span>
-                </div>
+                <div
+                  class="skeleton"
+                  style="height: 16px; width: 70%; margin-bottom: 8px"
+                ></div>
+                <div class="skeleton" style="height: 12px; width: 50%"></div>
               </div>
             </article>
             <article class="card recipe-card">
               <div class="recipe-card__media">
-                <img
-                  src="https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=500&q=80"
-                  alt="Egusi soup"
-                  loading="lazy"
-                />
-                <button class="recipe-card__save" aria-label="Save recipe">
-                  🤍
-                </button>
+                <div class="skeleton" style="width: 100%; height: 100%"></div>
               </div>
               <div class="recipe-card__body">
-                <h3 class="recipe-card__title">Egusi Soup, No Shortcuts</h3>
-                <div class="recipe-card__meta">
-                  <span class="text-mono">1 hr 10 min</span><span>·</span
-                  ><span>Medium</span><span>·</span><span>Serves 8</span>
-                </div>
-                <div class="recipe-card__author">
-                  <img src="https://i.pravatar.cc/40?img=15" alt="" />
-                  <span>Mama Ronke</span>
-                </div>
+                <div
+                  class="skeleton"
+                  style="height: 16px; width: 70%; margin-bottom: 8px"
+                ></div>
+                <div class="skeleton" style="height: 12px; width: 50%"></div>
               </div>
             </article>
             <article class="card recipe-card">
               <div class="recipe-card__media">
-                <img
-                  src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&q=80"
-                  alt="Suya skewers"
-                  loading="lazy"
-                />
-                <button class="recipe-card__save" aria-label="Save recipe">
-                  🤍
-                </button>
+                <div class="skeleton" style="width: 100%; height: 100%"></div>
               </div>
               <div class="recipe-card__body">
-                <h3 class="recipe-card__title">Suya Marinade, My Way</h3>
-                <div class="recipe-card__meta">
-                  <span class="text-mono">30 min</span><span>·</span
-                  ><span>Easy</span><span>·</span><span>Serves 4</span>
-                </div>
-                <div class="recipe-card__author">
-                  <img src="https://i.pravatar.cc/40?img=8" alt="" />
-                  <span>Yusuf Grills</span>
-                </div>
+                <div
+                  class="skeleton"
+                  style="height: 16px; width: 70%; margin-bottom: 8px"
+                ></div>
+                <div class="skeleton" style="height: 12px; width: 50%"></div>
               </div>
             </article>
             <article class="card recipe-card">
@@ -430,20 +399,28 @@
       </section>
 
       <!-- ============ SPONSORED (monetization slot, clearly labeled) ============ -->
+      <!-- Papilz Foods — "Shop now" deep-links to WhatsApp with a prefilled message
+           (see sponsoredWhatsAppURL() in js/app.js). Swap PAPILZ_WHATSAPP_NUMBER
+           there for the real number before this goes live. -->
       <section class="container">
         <div class="sponsored-strip">
           <span class="badge badge--sponsored">Sponsored</span>
           <img
-            src="https://images.unsplash.com/photo-1584990347449-a0a1d1b23a13?w=200&q=80"
-            alt="Non-stick cookware set"
+            src="assets/logos/papilz-foods-logo.png"
+            alt="Papilz Foods logo"
           />
           <div style="flex: 1">
-            <h4>Non-stick pot sets built for daily jollof</h4>
-            <p class="text-sm text-muted">
-              Kitchen Konnect NG — free delivery in Lagos this week.
-            </p>
+            <h4>Papilz Foods</h4>
+            <p class="text-sm text-muted">Eat good, feel good.</p>
           </div>
-          <a href="#" class="btn btn--secondary">Shop now</a>
+          <a
+            href="#"
+            id="papilz-shop-now"
+            class="btn btn--secondary"
+            target="_blank"
+            rel="noopener"
+            >Shop now</a
+          >
         </div>
       </section>
 
