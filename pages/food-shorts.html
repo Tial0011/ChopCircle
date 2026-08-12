@@ -97,52 +97,24 @@
   </div>
 
   <main id="main">
-    <section class="shorts-teaser">
-      <div class="shorts-teaser__grid" aria-hidden="true">
-        <div class="shorts-teaser__thumb"></div>
-        <div class="shorts-teaser__thumb"></div>
-        <div class="shorts-teaser__thumb"></div>
-        <div class="shorts-teaser__thumb"></div>
-        <div class="shorts-teaser__thumb"></div>
-        <div class="shorts-teaser__thumb"></div>
-        <div class="shorts-teaser__thumb"></div>
-        <div class="shorts-teaser__thumb"></div>
-        <div class="shorts-teaser__thumb"></div>
-        <div class="shorts-teaser__thumb"></div>
+    <section class="shorts-view">
+      <div class="shorts-view__filters" role="list" aria-label="Video categories">
+        <button class="shorts-view__chip" aria-pressed="true" role="listitem">All</button>
+        <button class="shorts-view__chip" role="listitem">🥘 Local Dishes</button>
+        <button class="shorts-view__chip" role="listitem">🍚 Rice</button>
+        <button class="shorts-view__chip" role="listitem">🍲 Soups</button>
+        <button class="shorts-view__chip" role="listitem">🍢 Swallow</button>
       </div>
-      <div class="shorts-teaser__overlay">
-        <div class="shorts-teaser__card">
-          <span class="shorts-teaser__badge">Coming soon</span>
-          <h1>Food Shorts</h1>
-          <p>Quick, bite-sized Nigerian food videos are on the way — how-tos, kitchen hacks, and street food finds in under 60 seconds.</p>
-          <a class="btn btn--primary" href="../index.html">Back to home</a>
-        </div>
+
+      <div class="shorts-view__empty">
+        <span class="shorts-view__empty-icon" aria-hidden="true">🎬</span>
+        <h1>No videos in this channel yet</h1>
+        <p class="shorts-view__empty-sub">Check back soon</p>
+        <p class="shorts-view__empty-copy">Quick, bite-sized Nigerian food videos are on the way — how-tos, kitchen hacks, and street food finds in under 60 seconds.</p>
+        <a class="btn btn--primary" href="../index.html">Back to home</a>
       </div>
     </section>
   </main>
-
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <div>
-        <a href="../index.html" class="logo" style="color:var(--text-inverse)"><span class="logo__mark" aria-hidden="true"></span>ChopCircle</a>
-        <p style="margin-top:var(--space-3);opacity:0.7;max-width:32ch">The home for Nigerian home cooks and food lovers, everywhere.</p>
-      </div>
-      <div><h5>Explore</h5><ul><li><a href="feed.html">Feed</a></li><li><a href="recipes.html">Recipes</a></li><li><a href="food-shorts.html">Food Shorts</a></li><li><a href="../index.html#creators">Creators</a></li></ul></div>
-      <div><h5>Account</h5><ul>
-        <li class="auth-guest hidden"><a href="login.html">Log in</a></li>
-        <li class="auth-guest hidden"><a href="signup.html">Sign up</a></li>
-        <li class="auth-user hidden"><a href="profile.html" class="account-profile-link">My profile</a></li>
-        <li class="auth-user hidden"><a href="chat.html">Messages</a></li>
-        <li class="auth-user hidden"><button type="button" class="logout-btn link-btn">Log out</button></li>
-        <li><a href="settings.html">Settings</a></li>
-      </ul></div>
-      <div><h5>Company</h5><ul><li><a href="#">About</a></li><li><a href="#">Advertise with us</a></li><li><a href="#">Privacy</a></li></ul></div>
-    </div>
-    <div class="site-footer__bottom">
-      <span>© 2026 ChopCircle. Made with ❤️ in Nigeria.</span>
-      <span>Built for cooks, by cooks.</span>
-    </div>
-  </footer>
 
   <script type="module" src="../js/food-shorts-page.js"></script>
 </body>
