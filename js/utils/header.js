@@ -17,6 +17,7 @@ import { logout } from "../auth/logout.js";
 import { getProfile } from "../profile/profileService.js";
 import { listenNotifications, markAllRead } from "../notifications/notificationService.js";
 import { notificationItemHTML } from "../notifications/notificationItem.js";
+import { isPushSupported, pushPermissionState, enablePush } from "../notifications/push.js";
 import { listenUserChats } from "../chat/chatService.js";
 import { avatarSrc } from "./avatar.js";
 
@@ -52,6 +53,33 @@ function wireDropdown(trigger, panel) {
   return { onOpen: (cb) => (onOpenCallback = cb) };
 }
 
+let pushPromptAttempted = false;
+
+/**
+ * Fires the browser's native notification-permission prompt the first
+ * time someone opens the bell dropdown, same enablePush() flow as the
+ * "Enable notifications" banner on notifications.html (see
+ * notifications-page.js's initPushBanner) — this just gives the bell
+ * itself a second, more-discoverable entry point into it, rather than
+ * requiring a visit to the full notifications page. Only actually
+ * prompts when permission is still undecided ("default"); if the person
+ * already granted or denied it at the browser level, requestPermission()
+ * resolves immediately without showing anything, so enablePush() is a
+ * safe no-op UI-wise in both of those cases. Gated to once per page load
+ * (bfcacheGuardWired-style flag) so re-opening the dropdown doesn't keep
+ * re-running the token/service-worker setup for no reason.
+ */
+async function requestPushPermissionOnce(uid) {
+  if (pushPromptAttempted) return;
+  pushPromptAttempted = true;
+  try {
+    if (!(await isPushSupported()) || pushPermissionState() !== "default") return;
+    await enablePush(uid);
+  } catch (error) {
+    console.error("Failed to enable push notifications from bell:", error);
+  }
+}
+
 function wireNotifications(uid, basePath) {
   const bell = $("#notif-bell");
   const badge = $("#notif-badge");
@@ -64,6 +92,7 @@ function wireNotifications(uid, basePath) {
   const dropdown = wireDropdown(bell, panel);
   dropdown.onOpen(() => {
     if (latest.some((n) => !n.isRead)) markAllRead(latest).catch((error) => console.error("Failed to mark notifications read:", error));
+    requestPushPermissionOnce(uid);
   });
 
   listenNotifications(uid, (notifications) => {
@@ -200,7 +229,7 @@ export function initAuthHeader(user, { basePath = "" } = {}) {
 
   wireAccountProfileLinks(user.uid, basePath);
   wireLogoutButtons();
-  wireAvatarMenu(user, basePath); // desktop-only: avatar image + dropdown open/close
-  wireNotifications(user.uid, basePath); // desktop-only: bell + dropdown open/close
+  wireAvatarMenu(user, basePath); // avatar image + dropdown open/close (desktop + mobile)
+  wireNotifications(user.uid, basePath); // bell + dropdown open/close (desktop + mobile; panel repositions on small screens, see header-auth.css)
   wireMessagesBadge(user.uid); // both desktop nav-links and mobile-drawer__links
 }

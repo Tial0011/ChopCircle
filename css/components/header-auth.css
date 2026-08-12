@@ -1,10 +1,14 @@
 /* ChopCircle — Auth-aware header controls (Phase 10)
    Backs the #auth-guest / #auth-user markup every page with a
    .site-header now ships (see HANDOFF.md) and js/utils/header.js's
-   initAuthHeader(). Desktop-only: the notification bell + avatar dropdown
-   live in .header-actions; the mobile drawer gets a plain link list
-   instead (.mobile-account-links, below) rather than a duplicate set of
-   these same element IDs — see HANDOFF.md's note on why. */
+   initAuthHeader(). The notification bell + avatar dropdown in
+   .header-actions are shared markup across breakpoints (they stay
+   visible when .nav-links/.header-search collapse into the hamburger
+   below 860px — see header.css) and just reposition themselves under
+   480px, below; the mobile drawer separately gets its own plain link
+   list (.mobile-account-links, below) for logout/profile/etc rather than
+   a duplicate set of these same element IDs — see HANDOFF.md's note on
+   why. */
 
 .auth-guest,
 .auth-user {
@@ -166,6 +170,30 @@
   border-radius: 50%;
   background: var(--brand-primary);
   vertical-align: middle;
+}
+
+/* ---- Dropdowns on small screens ----
+   Both dropdown panels are positioned `right: 0` relative to their own
+   trigger (.notif-bell-wrap / .avatar-wrap), which sits somewhere in the
+   middle of .header-actions on mobile — not flush with the viewport edge
+   the way it is on desktop. A 340px-wide panel anchored to that trigger
+   routinely ran off the left edge of the screen (clipped by the viewport,
+   not by any overflow:hidden — nothing was cutting it off on purpose, it
+   was just positioned partly offscreen), so on phones the notification
+   list could be mostly invisible/unreachable. Below this breakpoint we
+   stop anchoring to the trigger and instead pin the panel under the
+   header, full-width minus a margin, so it's always entirely on-screen
+   regardless of where the bell/avatar happen to sit. */
+@media (max-width: 480px) {
+  .dropdown-panel {
+    position: fixed;
+    top: calc(var(--header-height) + var(--space-2));
+    left: var(--space-3);
+    right: var(--space-3);
+    width: auto;
+    max-width: none;
+  }
+  .notif-dropdown { width: auto; max-width: none; }
 }
 
 /* ---- Mobile drawer auth block (plain link list, no dropdowns) ---- */
