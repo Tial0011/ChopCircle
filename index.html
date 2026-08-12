@@ -111,6 +111,11 @@
             <div><strong>3,800+</strong><span>Home cooks</span></div>
             <div><strong>96%</strong><span>Would cook again</span></div>
           </div>
+          <p class="hero__guest-note auth-guest hidden">
+            <strong>New here?</strong> ChopCircle is a free social app for Nigerian home cooking:
+            post what you make, save and follow trusted recipes, and message other cooks directly —
+            no account needed just to look around.
+          </p>
         </div>
         <div class="hero__collage">
           <img src="https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=600&q=80" alt="A pot of jollof rice garnished with fried plantain" loading="eager" />
@@ -294,7 +299,14 @@
         <p style="margin-top:var(--space-3);opacity:0.7;max-width:32ch">The home for Nigerian home cooks and food lovers, everywhere.</p>
       </div>
       <div><h5>Explore</h5><ul><li><a href="pages/feed.html">Feed</a></li><li><a href="pages/recipes.html">Recipes</a></li><li><a href="#creators">Creators</a></li></ul></div>
-      <div><h5>Account</h5><ul><li><a href="pages/login.html">Log in</a></li><li><a href="pages/signup.html">Sign up</a></li><li><a href="pages/settings.html">Settings</a></li></ul></div>
+      <div><h5>Account</h5><ul>
+        <li class="auth-guest hidden"><a href="pages/login.html">Log in</a></li>
+        <li class="auth-guest hidden"><a href="pages/signup.html">Sign up</a></li>
+        <li class="auth-user hidden"><a href="pages/profile.html" class="account-profile-link">My profile</a></li>
+        <li class="auth-user hidden"><a href="pages/chat.html">Messages</a></li>
+        <li class="auth-user hidden"><button type="button" class="logout-btn link-btn">Log out</button></li>
+        <li><a href="pages/settings.html">Settings</a></li>
+      </ul></div>
       <div><h5>Company</h5><ul><li><a href="#">About</a></li><li><a href="#">Advertise with us</a></li><li><a href="#">Privacy</a></li></ul></div>
     </div>
     <div class="site-footer__bottom">

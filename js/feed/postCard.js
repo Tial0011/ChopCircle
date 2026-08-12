@@ -200,17 +200,23 @@ export function initPostCard(cardEl, post, currentUser, onNeedsAuth) {
 
     try {
       await toggleLikePost(post.id, currentUser.uid);
+      // Don't force a repaint from latestLikeCount/latestLiked here — the
+      // transaction resolving is NOT the same moment listenPost()'s/
+      // listenUserLikedPost()'s onSnapshot fires with the new value (that
+      // gap is exactly why this is gated at all), so "latest" at this
+      // instant is often still the PRE-toggle snapshot. Painting it caused
+      // a visible flicker back to the old count/heart right after the
+      // optimistic update, then a second correction once the listener
+      // actually caught up a moment later — the "like isn't fast enough"
+      // feeling. Leaving the optimistic paint in place and simply
+      // un-gating (below) lets the listener repaint itself, once, only if
+      // the server's value ever actually differs from the guess.
     } catch (error) {
       console.error("Failed to toggle like:", error);
       paintLiked(wasLiked);
       likeCountEl.textContent = countBeforeClick;
     } finally {
       likePending = false;
-      // Repaint from whatever listenPost()/listenUserLikedPost() most
-      // recently received while gated, so we land on the true server
-      // value rather than staying stuck on the optimistic guess.
-      likeCountEl.textContent = latestLikeCount;
-      paintLiked(latestLiked);
     }
   });
 
@@ -227,14 +233,14 @@ export function initPostCard(cardEl, post, currentUser, onNeedsAuth) {
 
     try {
       await toggleRepostPost(post.id, currentUser.uid);
+      // Same reasoning as the like handler above: no forced repaint here —
+      // let the un-gated listener below settle it.
     } catch (error) {
       console.error("Failed to toggle repost:", error);
       paintReposted(wasReposted);
       shareCountEl.textContent = countBeforeClick;
     } finally {
       repostPending = false;
-      shareCountEl.textContent = latestShareCount;
-      paintReposted(latestReposted);
     }
   });
 

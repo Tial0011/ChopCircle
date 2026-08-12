@@ -126,11 +126,11 @@ createdAt: timestamp
 ## `notifications/{notificationId}`
 ```
 recipientId: string
-type: "like" | "follow" | "comment" | "reply" | "share"
+type: "like" | "follow" | "comment" | "reply" | "share" | "message"
 actorId: string
 actorName: string
 actorPhotoURL: string | null
-targetType: "recipe" | "post" | "comment" | "user"
+targetType: "recipe" | "post" | "comment" | "user" | "chat"
 targetId: string
 targetPreview: string
 isRead: boolean

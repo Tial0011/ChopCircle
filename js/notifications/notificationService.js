@@ -112,6 +112,8 @@ export function notificationText(n) {
       return `replied to your comment${n.targetPreview ? `: "${n.targetPreview}"` : ""}`;
     case "share":
       return "reposted your post";
+    case "message":
+      return `sent you a message${n.targetPreview ? `: "${n.targetPreview}"` : ""}`;
     default:
       return "interacted with you";
   }
@@ -127,6 +129,7 @@ export function notificationText(n) {
  */
 export function notificationHref(n, { basePath = "" } = {}) {
   if (n.type === "follow") return `${basePath}profile.html?id=${n.actorId}`;
+  if (n.type === "message" || n.targetType === "chat") return `${basePath}chat.html?with=${n.actorId}`;
   if (n.targetType === "recipe") return `${basePath}recipe-details.html?id=${n.targetId}`;
   return `${basePath}feed.html`;
 }

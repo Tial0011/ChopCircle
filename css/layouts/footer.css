@@ -21,6 +21,17 @@
 .site-footer ul { display: flex; flex-direction: column; gap: var(--space-2); }
 .site-footer a { color: var(--text-inverse); opacity: 0.75; font-size: var(--text-sm); }
 .site-footer a:hover { opacity: 1; }
+/* Footer's "Log out" is a <button> (needs a click handler, unlike its
+   sibling <a> links) sitting in the same list — reset it to look and
+   behave like those links rather than a default browser button. */
+.site-footer .link-btn {
+  all: unset;
+  cursor: pointer;
+  color: var(--text-inverse);
+  opacity: 0.75;
+  font-size: var(--text-sm);
+}
+.site-footer .link-btn:hover { opacity: 1; }
 
 .site-footer__bottom {
   max-width: var(--container-max);

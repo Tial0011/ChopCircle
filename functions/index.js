@@ -118,6 +118,10 @@ function pushCopyFor(notification) {
       return { title: "New comment", body: `${actor} commented on your post${notification.targetPreview ? `: "${notification.targetPreview}"` : ""}` };
     case "reply":
       return { title: "New reply", body: `${actor} replied to your comment${notification.targetPreview ? `: "${notification.targetPreview}"` : ""}` };
+    case "share":
+      return { title: "New repost", body: `${actor} reposted your post` };
+    case "message":
+      return { title: `New message from ${actor}`, body: notification.targetPreview || "sent you a message" };
     default:
       return { title: "ChopCircle", body: `${actor} interacted with you` };
   }
@@ -125,6 +129,7 @@ function pushCopyFor(notification) {
 
 function pushUrlFor(notification) {
   if (notification.type === "follow") return `pages/profile.html?id=${notification.actorId}`;
+  if (notification.type === "message" || notification.targetType === "chat") return `pages/chat.html?with=${notification.actorId}`;
   if (notification.targetType === "recipe") return `pages/recipe-details.html?id=${notification.targetId}`;
   return "pages/feed.html";
 }

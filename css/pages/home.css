@@ -37,6 +37,20 @@
 }
 .hero__stats strong { display: block; font-size: var(--text-2xl); color: var(--text-primary); }
 .hero__stats span { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+/* Guest-only explainer — initAuthHeader() (js/utils/header.js) hides this
+   the moment a signed-in user is detected, same .auth-guest mechanism the
+   header/footer login-vs-account controls already use. */
+.hero__guest-note {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 52ch;
+}
+.hero__guest-note strong { color: var(--text-primary); }
 
 .hero__collage {
   position: relative;

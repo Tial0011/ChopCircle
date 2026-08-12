@@ -25,6 +25,7 @@ import {
   limit,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { createNotification } from "../notifications/notificationService.js";
 
 const USERS = "users";
 const CHATS = "chats";
@@ -85,14 +86,22 @@ export function listenUserChats(uid, callback) {
 }
 
 /**
- * Live message list for one chat, oldest first, most recent
- * MESSAGE_PAGE_SIZE messages. No composite index needed — this is a
- * single-field orderBy scoped to a subcollection.
+ * Live message list for one chat: the most recent MESSAGE_PAGE_SIZE
+ * messages, oldest-first for rendering. Queried `createdAt DESC` +
+ * `limit()` (newest N) and reversed client-side — NOT `createdAt ASC` +
+ * `limit()`, which would pin the window to the OLDEST N messages instead.
+ * That was the earlier bug here: once a chat passed MESSAGE_PAGE_SIZE
+ * messages, an ascending+limit query never re-included anything past that
+ * cutoff, so new messages silently stopped appearing for both
+ * participants (visible on whichever side happened to open the thread
+ * after the cutoff) even though sendMessage() kept writing them fine.
+ * No composite index needed — this is a single-field orderBy scoped to a
+ * subcollection.
  * @returns {() => void} unsubscribe function
  */
 export function listenMessages(chatId, callback) {
-  const q = query(collection(db, CHATS, chatId, MESSAGES), orderBy("createdAt", "asc"), limit(MESSAGE_PAGE_SIZE));
-  return onSnapshot(q, (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }))));
+  const q = query(collection(db, CHATS, chatId, MESSAGES), orderBy("createdAt", "desc"), limit(MESSAGE_PAGE_SIZE));
+  return onSnapshot(q, (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })).reverse()));
 }
 
 /**
@@ -106,9 +115,19 @@ export function listenMessages(chatId, callback) {
  * @param {string} senderId
  * @param {string|null} text
  * @param {{ imageURL?: string, audioURL?: string, audioDurationSec?: number }} [media]
+ *
+ * Also raises a "message" notification (Phase 13) for the other
+ * participant, same "after the write, using data the write itself just
+ * touched" ordering feedService.js's toggleLikePost()/toggleRepostPost()
+ * use — read here is the chat doc we're about to update anyway, so it
+ * costs nothing extra. Every message raises one (no per-thread mute yet),
+ * matching how every like/comment/repost already raises one regardless of
+ * whether the recipient has that page open.
  */
 export async function sendMessage(chatId, senderId, text, media = {}) {
   const { imageURL = null, audioURL = null, audioDurationSec = null } = media;
+  const preview = text || (imageURL ? "📷 Photo" : audioURL ? "🎤 Voice note" : "");
+
   await addDoc(collection(db, CHATS, chatId, MESSAGES), {
     senderId,
     text: text || null,
@@ -118,12 +137,31 @@ export async function sendMessage(chatId, senderId, text, media = {}) {
     status: "sent",
     createdAt: serverTimestamp(),
   });
+
+  const chatSnap = await getDoc(doc(db, CHATS, chatId));
+  const chat = chatSnap.exists() ? chatSnap.data() : null;
+
   await updateDoc(doc(db, CHATS, chatId), {
-    lastMessage: text || (imageURL ? "📷 Photo" : audioURL ? "🎤 Voice note" : ""),
+    lastMessage: preview,
     lastMessageAt: serverTimestamp(),
     lastSenderId: senderId,
     lastMessageStatus: "sent",
   });
+
+  const recipientId = chat ? otherParticipant(chat, senderId) : null;
+  if (recipientId) {
+    const sender = chat.participants?.[senderId] || {};
+    await createNotification({
+      recipientId,
+      actorId: senderId,
+      actorName: sender.displayName,
+      actorPhotoURL: sender.photoURL,
+      type: "message",
+      targetType: "chat",
+      targetId: chatId,
+      targetPreview: preview.slice(0, 80),
+    });
+  }
 }
 
 /**
