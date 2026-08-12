@@ -2,7 +2,7 @@
 import { $, setError, clearErrors, setLoading } from "../utils/dom.js";
 import { initTheme } from "../utils/theme.js";
 import { initMobileNav } from "../utils/mobileNav.js";
-import { initAuthHeader } from "../utils/header.js";
+import { initAuthHeader, initHeaderSearch } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { isNonEmpty } from "../utils/validation.js";
 import { requireAuth } from "../auth/authGuard.js";
@@ -21,6 +21,7 @@ async function init() {
 
   const user = await requireAuth(); // redirects to login.html if signed out
   initAuthHeader(user, { basePath: "" });
+  initHeaderSearch("");
   cancelLink.href = `profile.html?id=${user.uid}`;
 
   const photoUpload = initImageUploadField($("#photoURL-upload"), { folder: "users", uid: user.uid });

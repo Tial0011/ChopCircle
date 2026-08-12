@@ -74,6 +74,9 @@ export async function getRecipe(recipeId) {
 /**
  * Creates a recipe owned by `uid`. `data` should already match the schema's
  * ingredients/steps shape — form controllers are responsible for that.
+ * Also bumps `users/{uid}.recipeCount` (profile-page.js's recipe count was
+ * reading this field, but nothing ever wrote to it — every profile showed
+ * 0 recipes regardless of how many the user actually had).
  * @returns {Promise<string>} the new recipe's id
  */
 export async function createRecipe(uid, data) {
@@ -97,6 +100,7 @@ export async function createRecipe(uid, data) {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  await updateDoc(doc(db, USERS, uid), { recipeCount: increment(1) });
   return ref.id;
 }
 
@@ -119,8 +123,18 @@ export async function updateRecipe(recipeId, data) {
   });
 }
 
+/** Deletes a recipe and gives back the one recipeCount slot it was taking
+ * up on its author's profile — the corresponding decrement to
+ * createRecipe()'s increment above. Reads the recipe first only to get
+ * authorId; Firestore rules already enforce that only the author can
+ * delete it, this function assumes that check has passed. */
 export async function deleteRecipe(recipeId) {
+  const snap = await getDoc(doc(db, RECIPES, recipeId));
+  const authorId = snap.exists() ? snap.data().authorId : null;
   await deleteDoc(doc(db, RECIPES, recipeId));
+  if (authorId) {
+    await updateDoc(doc(db, USERS, authorId), { recipeCount: increment(-1) });
+  }
 }
 
 function likeDocId(uid, recipeId) {

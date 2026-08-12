@@ -2,11 +2,11 @@
 import { $ } from "../utils/dom.js";
 import { initTheme } from "../utils/theme.js";
 import { initMobileNav } from "../utils/mobileNav.js";
-import { initAuthHeader } from "../utils/header.js";
+import { initAuthHeader, initHeaderSearch } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { getCurrentUser } from "../auth/authGuard.js";
 import { initImageUploadField } from "../utils/imageUpload.js";
-import { listPosts, createPost, listenNewestPost } from "./feedService.js";
+import { listPosts, createPost, listenNewestPost, PAGE_SIZE } from "./feedService.js";
 import { postCardHTML, initPostCard } from "./postCard.js";
 
 const feedList = $("#feed-list");
@@ -57,7 +57,12 @@ async function loadFeed({ append = false } = {}) {
   cursor = lastDoc;
   renderPosts(posts, { append });
   emptyState.classList.toggle("hidden", feedList.children.length > 0);
-  loadMoreBtn.hidden = !lastDoc || posts.length === 0;
+  // A returned lastDoc alone doesn't mean there's a NEXT page — it's just
+  // the last doc of whatever came back. A page that's short of PAGE_SIZE
+  // means the collection (for this query) is exhausted even though
+  // lastDoc is still truthy, so "Load more" would show, then return
+  // nothing when tapped. Only a FULL page justifies offering another one.
+  loadMoreBtn.hidden = !lastDoc || posts.length < PAGE_SIZE;
   feedList.setAttribute("aria-busy", "false");
   if (!append && posts[0]) newestKnownPostId = posts[0].id;
   newPostsBanner.classList.add("hidden");
@@ -144,6 +149,7 @@ initInstallPrompt();
 getCurrentUser().then((user) => {
   currentUser = user;
   initAuthHeader(user, { basePath: "" });
+  initHeaderSearch("");
   initComposer();
   loadFeed()
     .then(watchForNewPosts)

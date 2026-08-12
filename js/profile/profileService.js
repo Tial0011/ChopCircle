@@ -21,6 +21,7 @@ import {
   increment,
   onSnapshot,
   getAggregateFromServer,
+  getCountFromServer,
   sum,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { createNotification } from "../notifications/notificationService.js";
@@ -107,6 +108,52 @@ export async function updateUserProfile(uid, { displayName, bio, photoURL, cover
 
 function followDocId(followerId, followingId) {
   return `${followerId}_${followingId}`;
+}
+
+/**
+ * Recomputes `users/{uid}.recipeCount` from an actual count of that user's
+ * `recipes` docs and corrects the stored field if it's wrong — a one-time
+ * self-heal for accounts whose recipes were created before createRecipe()
+ * started incrementing this counter (it previously never did, so every
+ * existing account's recipeCount is stuck at 0 regardless of how many
+ * recipes they actually have). Cheap: getCountFromServer() is a single
+ * aggregation query, not a document download per recipe. Only meant to be
+ * called for the profile's own owner viewing their own page — see
+ * profile-page.js — not on every visitor of every profile.
+ */
+export async function reconcileRecipeCount(uid) {
+  const agg = await getCountFromServer(query(collection(db, RECIPES), where("authorId", "==", uid)));
+  const actualCount = agg.data().count;
+  const userSnap = await getDoc(doc(db, USERS, uid));
+  const storedCount = userSnap.exists() ? userSnap.data().recipeCount || 0 : 0;
+  if (actualCount !== storedCount) {
+    await updateDoc(doc(db, USERS, uid), { recipeCount: actualCount });
+  }
+}
+
+/**
+ * Same self-heal as reconcileRecipeCount() above, but for followerCount/
+ * followingCount against the actual `follows` docs. toggleFollow()'s
+ * transaction has always kept these counters correct going forward for
+ * follows made through it — this only matters for accounts whose stored
+ * counts drifted some other way (e.g. a follow written before this schema
+ * settled). Two aggregation queries, not a doc download per follower.
+ */
+export async function reconcileFollowCounts(uid) {
+  const [followerAgg, followingAgg, userSnap] = await Promise.all([
+    getCountFromServer(query(collection(db, FOLLOWS), where("followingId", "==", uid))),
+    getCountFromServer(query(collection(db, FOLLOWS), where("followerId", "==", uid))),
+    getDoc(doc(db, USERS, uid)),
+  ]);
+  const actualFollowerCount = followerAgg.data().count;
+  const actualFollowingCount = followingAgg.data().count;
+  const stored = userSnap.exists() ? userSnap.data() : {};
+  const patch = {};
+  if (actualFollowerCount !== (stored.followerCount || 0)) patch.followerCount = actualFollowerCount;
+  if (actualFollowingCount !== (stored.followingCount || 0)) patch.followingCount = actualFollowingCount;
+  if (Object.keys(patch).length > 0) {
+    await updateDoc(doc(db, USERS, uid), patch);
+  }
 }
 
 /** @returns {Promise<boolean>} whether `followerId` currently follows `followingId`. */

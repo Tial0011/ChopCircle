@@ -2,10 +2,10 @@
 import { $, $$ } from "../utils/dom.js";
 import { initTheme } from "../utils/theme.js";
 import { initMobileNav } from "../utils/mobileNav.js";
-import { initAuthHeader } from "../utils/header.js";
+import { initAuthHeader, initHeaderSearch } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { getCurrentUser } from "../auth/authGuard.js";
-import { getProfile, listenProfile, listUserRecipes, listUserPosts } from "./profileService.js";
+import { getProfile, listenProfile, listUserRecipes, listUserPosts, reconcileRecipeCount, reconcileFollowCounts, PAGE_SIZE } from "./profileService.js";
 import { initProfileActions } from "./profileActions.js";
 import { recipeCardHTML } from "../recipes/recipeCard.js";
 import { postCardHTML, initPostCard } from "../feed/postCard.js";
@@ -67,7 +67,8 @@ async function loadRecipes({ append = false } = {}) {
   const html = recipes.map((r) => recipeCardHTML(r, { basePath: "" })).join("");
   recipesGrid.innerHTML = append ? recipesGrid.innerHTML + html : html;
   recipesEmpty.classList.toggle("hidden", recipesGrid.children.length > 0);
-  recipesLoadMoreBtn.hidden = !lastDoc || recipes.length === 0;
+  // Same fix as feed-page.js/recipes-page.js — see the comment there.
+  recipesLoadMoreBtn.hidden = !lastDoc || recipes.length < PAGE_SIZE;
   recipesGrid.setAttribute("aria-busy", "false");
 }
 
@@ -88,7 +89,7 @@ async function loadPosts({ append = false } = {}) {
   }
   posts.forEach(wirePostCard);
   postsEmpty.classList.toggle("hidden", postsList.children.length > 0);
-  postsLoadMoreBtn.hidden = !lastDoc || posts.length === 0;
+  postsLoadMoreBtn.hidden = !lastDoc || posts.length < PAGE_SIZE;
   postsList.setAttribute("aria-busy", "false");
 }
 
@@ -126,6 +127,7 @@ async function init() {
   const [profile, user] = await Promise.all([getProfile(profileId), getCurrentUser()]);
   currentUser = user;
   initAuthHeader(user, { basePath: "" });
+  initHeaderSearch("");
 
   if (!profile) {
     loadingState.classList.add("hidden");
@@ -136,6 +138,14 @@ async function init() {
   renderProfile(profile);
   const unsubProfile = listenProfile(profileId, renderProfile);
   window.addEventListener("beforeunload", unsubProfile);
+  // Self-heal only the viewer's own recipeCount (never a stranger's — no
+  // reason to spend a write on every profile visit) in case it predates
+  // createRecipe()/deleteRecipe() maintaining this counter. listenProfile
+  // above will pick up and render the correction automatically if it fires.
+  if (user && user.uid === profileId) {
+    reconcileRecipeCount(profileId).catch((error) => console.error("Failed to reconcile recipe count:", error));
+    reconcileFollowCounts(profileId).catch((error) => console.error("Failed to reconcile follow counts:", error));
+  }
   await initProfileActions({ currentUser, profileId, followBtn, messageLink, editLink, followerCountEl, goToLogin });
   initTabs();
   await loadRecipes();

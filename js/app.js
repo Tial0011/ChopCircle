@@ -5,7 +5,7 @@
 import { $, $$ } from "./utils/dom.js";
 import { initTheme } from "./utils/theme.js";
 import { initMobileNav } from "./utils/mobileNav.js";
-import { initAuthHeader } from "./utils/header.js";
+import { initAuthHeader, initHeaderSearch } from "./utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "./utils/pwa.js";
 import { getCurrentUser } from "./auth/authGuard.js";
 import { renderTrending } from "./feed/render-trending.js";
@@ -39,6 +39,7 @@ registerServiceWorker();
 initInstallPrompt();
 initCategoryChips();
 initNewsletterForm();
+initHeaderSearch("pages/");
 renderTrending().catch((error) => console.error("Failed to render trending recipes:", error));
 renderCreators().catch((error) => console.error("Failed to render featured creators:", error));
 getCurrentUser().then((user) => {

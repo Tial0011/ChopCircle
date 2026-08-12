@@ -17,6 +17,7 @@ import {
   setDoc,
   addDoc,
   updateDoc,
+  getDocs,
   onSnapshot,
   writeBatch,
   query,
@@ -30,7 +31,7 @@ import { createNotification } from "../notifications/notificationService.js";
 const USERS = "users";
 const CHATS = "chats";
 const MESSAGES = "messages";
-const MESSAGE_PAGE_SIZE = 50;
+export const MESSAGE_PAGE_SIZE = 50;
 
 function chatDocId(uidA, uidB) {
   return [uidA, uidB].sort().join("_");
@@ -102,6 +103,29 @@ export function listenUserChats(uid, callback) {
 export function listenMessages(chatId, callback) {
   const q = query(collection(db, CHATS, chatId, MESSAGES), orderBy("createdAt", "desc"), limit(MESSAGE_PAGE_SIZE));
   return onSnapshot(q, (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })).reverse()));
+}
+
+/**
+ * One-time (non-live) fetch of up to MESSAGE_PAGE_SIZE messages older than
+ * `beforeMessage`, oldest-first. listenMessages() only ever keeps the
+ * newest MESSAGE_PAGE_SIZE messages live — past that window there was
+ * previously no way to reach anything older at all, which is what made
+ * scrolling up in a long thread dead-end once it passed 50 messages.
+ * Paged in on demand (chat-page.js calls this when the user scrolls near
+ * the top) rather than kept live, since older history doesn't need
+ * real-time updates the way the active tail does.
+ * @returns {Promise<Array>} oldest-first, empty array if there's nothing older
+ */
+export async function loadOlderMessages(chatId, beforeMessage) {
+  if (!beforeMessage?.createdAt) return [];
+  const q = query(
+    collection(db, CHATS, chatId, MESSAGES),
+    orderBy("createdAt", "desc"),
+    where("createdAt", "<", beforeMessage.createdAt),
+    limit(MESSAGE_PAGE_SIZE)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })).reverse();
 }
 
 /**

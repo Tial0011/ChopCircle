@@ -2,7 +2,7 @@
 import { $ } from "../utils/dom.js";
 import { initTheme } from "../utils/theme.js";
 import { initMobileNav } from "../utils/mobileNav.js";
-import { initAuthHeader } from "../utils/header.js";
+import { initAuthHeader, initHeaderSearch } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { auth, db } from "../firebase/firebase-init.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
@@ -102,6 +102,7 @@ async function init() {
 
   const [recipe, currentUser] = await Promise.all([getRecipe(recipeId), getCurrentUser()]);
   initAuthHeader(currentUser, { basePath: "" });
+  initHeaderSearch("");
 
   if (!recipe) {
     loadingState.classList.add("hidden");

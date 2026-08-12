@@ -59,6 +59,14 @@
 
 @media (max-width: 480px) {
   .install-banner { flex-wrap: wrap; }
-  .install-banner__actions { flex-direction: row; width: 100%; margin-left: calc(48px + var(--space-3)); }
+  /* Bug fix: this used to be width:100% *plus* margin-left, which pushed
+     the row 60px past the banner's right edge — the width needs to shrink
+     by exactly the icon's width + gap it's offset by, not stay full-width
+     on top of that offset, or the Install button sticks out of the card. */
+  .install-banner__actions {
+    flex-direction: row;
+    width: calc(100% - 48px - var(--space-3));
+    margin-left: calc(48px + var(--space-3));
+  }
   .install-banner__actions .btn { flex: 1; }
 }

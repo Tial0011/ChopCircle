@@ -140,6 +140,32 @@ async function wireAvatarMenu(user, basePath) {
   }
 }
 
+let bfcacheGuardWired = false;
+
+/**
+ * The header/mobile-drawer search inputs (present on every page) had no
+ * behavior wired to them at all — you could type into them, but Enter did
+ * nothing. Recipes are the only thing ChopCircle actually has a search
+ * feature for (recipes-page.js's own #recipe-search, filtering by
+ * title/description), so this makes the header box do the thing its
+ * placeholder ("Search jollof, egusi…") already promised: jump to the
+ * recipes page with that query applied. recipes-page.js reads the
+ * `?search=` param back out on load — see the `initialSearch` handling
+ * there. Not a full-text search across the whole app (Firestore has no
+ * such thing built in) — just finally hooking the box up to the one
+ * search that does exist, instead of it doing nothing.
+ */
+export function initHeaderSearch(basePath = "") {
+  $$(".header-search input[type='search'], .mobile-drawer__search input[type='search']").forEach((input) => {
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      const q = input.value.trim();
+      if (!q) return;
+      window.location.href = `${basePath}recipes.html?search=${encodeURIComponent(q)}`;
+    });
+  });
+}
+
 /**
  * Wires the whole auth-aware header for one page. `user` is whatever
  * getCurrentUser()/requireAuth() resolved (possibly null). `basePath`
@@ -152,6 +178,23 @@ export function initAuthHeader(user, { basePath = "" } = {}) {
 
   guestBlocks.forEach((el) => el.classList.toggle("hidden", !!user));
   userBlocks.forEach((el) => el.classList.toggle("hidden", !user));
+
+  // The browser's back-forward cache freezes a page's whole JS state
+  // (including this render) instead of re-running it, so pressing Back
+  // to a page that was open before you signed in/out — anywhere on the
+  // site, e.g. the homepage sitting open behind login.html — restores it
+  // exactly as it looked pre-auth-change: the guest CTAs, footer login
+  // links, etc. all come back stale. Reload is the only way to re-sync
+  // every auth-gated element (header, footer, hero, feed) sitewide at
+  // once, not just the handful this file directly toggles. Wired once
+  // (not per initAuthHeader call, in case a page calls this more than
+  // once) since it's a page-lifecycle concern, not a per-render one.
+  if (!bfcacheGuardWired) {
+    bfcacheGuardWired = true;
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) location.reload();
+    });
+  }
 
   if (!user) return;
 

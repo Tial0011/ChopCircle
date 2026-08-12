@@ -6,7 +6,7 @@
 import { $ } from "../utils/dom.js";
 import { initTheme } from "../utils/theme.js";
 import { initMobileNav } from "../utils/mobileNav.js";
-import { initAuthHeader } from "../utils/header.js";
+import { initAuthHeader, initHeaderSearch } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { requireAuth } from "../auth/authGuard.js"; // this page makes no sense logged out
 import { listenNotifications, markAllRead } from "./notificationService.js";
@@ -71,6 +71,7 @@ async function init() {
 
   const user = await requireAuth(); // redirects to login.html if signed out
   initAuthHeader(user, { basePath: "" });
+  initHeaderSearch("");
 
   listenNotifications(user.uid, (notifications) => {
     renderNotifications(notifications);

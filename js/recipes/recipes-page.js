@@ -2,10 +2,10 @@
 import { $, $$ } from "../utils/dom.js";
 import { initTheme } from "../utils/theme.js";
 import { initMobileNav } from "../utils/mobileNav.js";
-import { initAuthHeader } from "../utils/header.js";
+import { initAuthHeader, initHeaderSearch } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { getCurrentUser } from "../auth/authGuard.js";
-import { listRecipes, CATEGORIES } from "./recipeService.js";
+import { listRecipes, CATEGORIES, PAGE_SIZE } from "./recipeService.js";
 import { recipeCardHTML } from "./recipeCard.js";
 
 const grid = $("#recipe-grid");
@@ -16,6 +16,15 @@ const sortSelect = $("#sort-select");
 const searchInput = $("#recipe-search");
 
 let state = { category: "", sortBy: "newest", cursor: null, search: "" };
+
+// The header search box (js/utils/header.js's initHeaderSearch()) sends
+// people here as `recipes.html?search=...` — pick that back up so it
+// actually lands on filtered results instead of just an unfiltered page.
+const initialSearch = new URLSearchParams(window.location.search).get("search") || "";
+if (initialSearch) {
+  state.search = initialSearch.trim().toLowerCase();
+  if (searchInput) searchInput.value = initialSearch;
+}
 
 function renderChips() {
   CATEGORIES.forEach(({ slug, name }) => {
@@ -53,7 +62,10 @@ async function loadRecipes({ append = false } = {}) {
   }
 
   emptyState.classList.toggle("hidden", grid.children.length > 0);
-  loadMoreBtn.hidden = !lastDoc || recipes.length === 0;
+  // Same fix as feed-page.js/profile-page.js: a short-of-PAGE_SIZE page
+  // means the collection's exhausted even though lastDoc is still set —
+  // only a full page means there's actually another one to load.
+  loadMoreBtn.hidden = !lastDoc || recipes.length < PAGE_SIZE;
   grid.setAttribute("aria-busy", "false");
 }
 
@@ -99,7 +111,10 @@ initChipFilter();
 initSort();
 initSearch();
 initLoadMore();
-getCurrentUser().then((user) => initAuthHeader(user, { basePath: "" }));
+getCurrentUser().then((user) => {
+  initAuthHeader(user, { basePath: "" });
+  initHeaderSearch("");
+});
 loadRecipes().catch((error) => {
   console.error("Failed to load recipes:", error);
   grid.innerHTML = `<p class="text-muted">Couldn't load recipes right now. Please try again shortly.</p>`;

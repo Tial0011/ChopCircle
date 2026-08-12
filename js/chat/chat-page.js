@@ -1,8 +1,8 @@
 // ChopCircle — Chat page controller (Phase 8)
-import { $ } from "../utils/dom.js";
+import { $, $$ } from "../utils/dom.js";
 import { initTheme } from "../utils/theme.js";
 import { initMobileNav } from "../utils/mobileNav.js";
-import { initAuthHeader } from "../utils/header.js";
+import { initAuthHeader, initHeaderSearch } from "../utils/header.js";
 import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { requireAuth } from "../auth/authGuard.js";
 import { stripHtml } from "../utils/validation.js";
@@ -11,6 +11,8 @@ import {
   getOrCreateChat,
   listenUserChats,
   listenMessages,
+  loadOlderMessages,
+  MESSAGE_PAGE_SIZE,
   sendMessage,
   markThreadSeen,
   otherParticipant,
@@ -40,6 +42,20 @@ let unsubscribeMessages = null;
 let chatsById = new Map();
 let voiceRecorder = null;
 let isRecording = false;
+
+// ---- Message list state ----
+// listenMessages() only keeps the newest MESSAGE_PAGE_SIZE messages live;
+// olderMessages holds everything paged in on top of that via scroll-up
+// (see loadOlderBatch). Combined + re-sorted on every render so the two
+// sources never fight over ordering.
+let liveMessages = [];
+let olderMessages = [];
+let hasMoreOlder = true;
+let loadingOlder = false;
+
+function allMessages() {
+  return [...olderMessages, ...liveMessages];
+}
 
 function chatListItemHTML(chat, uid) {
   const peerId = otherParticipant(chat, uid);
@@ -101,20 +117,83 @@ function messageHTML(message, uid) {
     </div>`;
 }
 
-function renderMessages(messages) {
-  const wasNearBottom = messageList.scrollTop + messageList.clientHeight >= messageList.scrollHeight - 40;
-  messageList.innerHTML = messages.map((m) => messageHTML(m, currentUser.uid)).join("");
-  if (wasNearBottom || messageList.dataset.firstRender !== "true") {
+// Pins the list to the bottom, robust to images that are still loading.
+// A plain `scrollTop = scrollHeight` right after innerHTML is set reads
+// scrollHeight before an <img> in the new content has decoded — the image
+// has no height yet, so the pin lands short of the true bottom. On PC this
+// showed up as new messages "stuck" just out of view until something else
+// forced a relayout. Re-pinning on rAF (post-layout) and again on each
+// image's load event closes that gap.
+function scrollToBottom() {
+  requestAnimationFrame(() => {
     messageList.scrollTop = messageList.scrollHeight;
-  }
+  });
+  $$("img", messageList).forEach((img) => {
+    if (img.complete) return;
+    img.addEventListener(
+      "load",
+      () => {
+        const stillNearBottom = messageList.scrollTop + messageList.clientHeight >= messageList.scrollHeight - img.clientHeight - 40;
+        if (stillNearBottom) messageList.scrollTop = messageList.scrollHeight;
+      },
+      { once: true }
+    );
+  });
+}
+
+function renderMessageList() {
+  const wasNearBottom = messageList.scrollTop + messageList.clientHeight >= messageList.scrollHeight - 40;
+  const shouldStick = messageList.dataset.firstRender !== "true" || wasNearBottom;
+  messageList.innerHTML = allMessages()
+    .map((m) => messageHTML(m, currentUser.uid))
+    .join("");
   messageList.dataset.firstRender = "true";
+  if (shouldStick) scrollToBottom();
+}
+
+function renderMessages(messages) {
+  liveMessages = messages;
+  renderMessageList();
   markThreadSeen(openChatId, currentUser.uid, messages).catch((error) => console.error("Failed to mark seen:", error));
+}
+
+// Fired on scroll; pages in the next batch of history once the user nears
+// the top of what's currently loaded. Previously there was no code path
+// to fetch anything older than listenMessages()'s live 50, so a thread
+// past that length simply had nowhere further to scroll up to.
+async function loadOlderBatch() {
+  if (!openChatId || loadingOlder || !hasMoreOlder) return;
+  const oldest = allMessages()[0];
+  if (!oldest) return;
+  loadingOlder = true;
+  try {
+    const older = await loadOlderMessages(openChatId, oldest);
+    if (older.length < MESSAGE_PAGE_SIZE) hasMoreOlder = false;
+    if (older.length === 0) return;
+    olderMessages = [...older, ...olderMessages];
+    const prevScrollHeight = messageList.scrollHeight;
+    const prevScrollTop = messageList.scrollTop;
+    messageList.innerHTML = allMessages()
+      .map((m) => messageHTML(m, currentUser.uid))
+      .join("");
+    // Keep whatever the user was looking at in place instead of yanking
+    // them to the new top now that older content was prepended above it.
+    messageList.scrollTop = prevScrollTop + (messageList.scrollHeight - prevScrollHeight);
+  } catch (error) {
+    console.error("Failed to load older messages:", error);
+  } finally {
+    loadingOlder = false;
+  }
 }
 
 function openChat(chatId, peerHint) {
   if (openChatId === chatId) return;
   openChatId = chatId;
   messageList.dataset.firstRender = "false";
+  liveMessages = [];
+  olderMessages = [];
+  hasMoreOlder = true;
+  loadingOlder = false;
   unsubscribeMessages?.();
 
   const chat = chatsById.get(chatId);
@@ -153,12 +232,16 @@ async function init() {
   initInstallPrompt();
   currentUser = await requireAuth();
   initAuthHeader(currentUser, { basePath: "" });
+  initHeaderSearch("");
 
   chatList.addEventListener("click", (event) => {
     const item = event.target.closest(".chat-list__item");
     if (item) openChat(item.dataset.chatId);
   });
   threadBack.addEventListener("click", closeThreadOnMobile);
+  messageList.addEventListener("scroll", () => {
+    if (messageList.scrollTop < 80) loadOlderBatch();
+  });
 
   messageForm.addEventListener("submit", async (event) => {
     event.preventDefault();
