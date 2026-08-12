@@ -12,18 +12,36 @@ import { storage } from "../firebase/firebase-init.js";
 
 const MAX_BYTES = 8 * 1024 * 1024; // matches storage.rules' isValidChatMedia()
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const UPLOAD_TIMEOUT_MS = 25000;
 
 function randomFileName(ext) {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 }
 
+/**
+ * Wraps uploadBytesResumable() with a hard timeout. Firebase's resumable
+ * upload retries transient failures with its own exponential backoff and
+ * has no built-in ceiling — on a genuinely stalled connection (network
+ * drops mid-upload, tab backgrounded, captive portal, etc.) that means the
+ * task can sit "in progress" indefinitely: no error, no resolution, the
+ * mic/image button just never re-enables. That's indistinguishable from a
+ * hang to whoever's waiting on it. Racing the task against a timer means
+ * the button always recovers within UPLOAD_TIMEOUT_MS either way, and
+ * task.cancel() stops the retries instead of leaving them running in the
+ * background after we've already given up on them.
+ */
 function upload(blobOrFile, chatId, fileName, contentType, onProgress) {
   const storageRef = ref(storage, `chats/${chatId}/${fileName}`);
   const task = uploadBytesResumable(storageRef, blobOrFile, { contentType });
-  return new Promise((resolve, reject) => {
+
+  const uploadPromise = new Promise((resolve, reject) => {
     task.on(
       "state_changed",
-      (snapshot) => onProgress?.(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
+      (snapshot) => {
+        if (snapshot.totalBytes > 0) {
+          onProgress?.(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100));
+        }
+      },
       reject,
       async () => {
         try {
@@ -34,6 +52,15 @@ function upload(blobOrFile, chatId, fileName, contentType, onProgress) {
       }
     );
   });
+
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => {
+      task.cancel();
+      reject(new Error("That took too long to send — check your connection and try again."));
+    }, UPLOAD_TIMEOUT_MS);
+  });
+
+  return Promise.race([uploadPromise, timeoutPromise]);
 }
 
 /**
@@ -109,6 +136,20 @@ export function createVoiceRecorder() {
         reject(new Error("Recording was never started."));
         return;
       }
+      // If the browser already stopped the recorder on its own (mic
+      // permission revoked mid-recording, the track ending because another
+      // app grabbed the mic, tab backgrounded on some mobile browsers,
+      // etc.), its "stop" event already fired before we ever got here —
+      // it won't fire again, and calling .stop() on an already-inactive
+      // recorder throws synchronously. Finish from whatever chunks we did
+      // capture instead of trying to stop an already-stopped recorder.
+      if (mediaRecorder.state === "inactive") {
+        const durationSec = Math.round((Date.now() - startedAt) / 1000);
+        const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
+        stopStream();
+        resolve({ blob, durationSec });
+        return;
+      }
       mediaRecorder.addEventListener(
         "stop",
         () => {
@@ -119,7 +160,12 @@ export function createVoiceRecorder() {
         },
         { once: true }
       );
-      mediaRecorder.stop();
+      try {
+        mediaRecorder.stop();
+      } catch (error) {
+        stopStream();
+        reject(error);
+      }
     });
   }
 
