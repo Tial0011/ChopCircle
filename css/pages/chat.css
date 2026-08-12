@@ -5,7 +5,16 @@
    make for auth-layout. See HANDOFF.md. */
 
 .chat-page {
+  /* Fallback for browsers without dvh support; overridden below. */
   height: calc(100vh - var(--header-height));
+  /* 100vh on mobile Safari/Chrome measures the viewport as if the address
+     bar + bottom toolbar were hidden — taller than what's actually on
+     screen while they're showing. Combined with overflow:hidden below,
+     the excess (exactly where the composer sits, at the bottom of this
+     flex column) got pushed off the real visible area with no way to
+     reach it: not a scroll bug, the input was rendered below the fold.
+     100dvh tracks the real, current visible viewport instead. */
+  height: calc(100dvh - var(--header-height));
   overflow: hidden;
 }
 
