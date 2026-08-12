@@ -401,9 +401,11 @@
       </section>
 
       <!-- ============ SPONSORED (monetization slot, clearly labeled) ============ -->
-      <!-- Papilz Foods — "Shop now" deep-links to WhatsApp with a prefilled message
-           (see initSponsoredShopLink() in js/app.js). Swap PAPILZ_WHATSAPP_NUMBER
-           there for the real number before this goes live. -->
+      <!-- Papilz Foods — "Shop now" deep-links to WhatsApp with a prefilled message.
+           The href is hardcoded here (not JS-injected) so it always works even
+           if app.js is slow/blocked. js/app.js's initSponsoredShopLink() also
+           re-sets it on load — keep PAPILZ_WHATSAPP_NUMBER there in sync with
+           this href if the number ever changes. -->
       <section class="container">
         <div class="sponsored-strip">
           <span class="badge badge--sponsored">Sponsored</span>
@@ -416,7 +418,7 @@
             <p class="text-sm text-muted">Eat good, feel good.</p>
           </div>
           <a
-            href="#"
+            href="https://wa.me/2348138076639?text=Hi%20Papilz%20Foods%21%20I%20found%20you%20on%20ChopCircle%20and%20I%27d%20like%20to%20order%20from%20you."
             id="papilz-shop-now"
             class="btn btn--secondary"
             target="_blank"
