@@ -194,7 +194,15 @@ body.drawer-open { overflow: hidden; }
   .site-header__inner { gap: var(--space-3); padding: 0 var(--space-4); }
 }
 @media (max-width: 480px) {
-  .site-header { height: 60px; }
+  /* Override the shared variable, not just .site-header's own height —
+     chat.css and feed.css both read --header-height to size themselves
+     against the header. Overriding only .site-header's literal height
+     left them still subtracting the full 72px below this breakpoint,
+     denying .chat-page ~12px of the space it actually had, which on a
+     content-heavy thread was enough to push the composer off the
+     bottom of the visible viewport entirely. */
+  :root { --header-height: 60px; }
+  .site-header { height: var(--header-height); }
   .logo { font-size: var(--text-lg); }
   .logo__mark { width: 26px; height: 26px; }
   .header-actions { gap: var(--space-2); }
