@@ -35,6 +35,10 @@ title: string
 description: string
 coverImageURL: string
 galleryURLs: string[]
+videoURL: string | null   -> a short 20-30s cook-along clip, uploaded via
+                             js/utils/videoUpload.js (recipes/{uid}/{file}
+                             in Storage). Optional — most recipes won't have
+                             one.
 ingredients: { id, name, amount, unit }[]
 steps: { id, order, text }[]
 cookTimeMinutes: number

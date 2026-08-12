@@ -1,0 +1,100 @@
+/* ChopCircle — Recipe video upload field
+   Same drop-zone pattern as image-upload.css, but for the one optional
+   20-30s cook-along clip a recipe can carry (see js/utils/videoUpload.js). */
+
+.video-upload {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.video-upload__dropzone {
+  position: relative;
+  width: 100%;
+  min-height: 160px;
+  border: 1.5px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-sunken);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+}
+.video-upload__dropzone:hover,
+.video-upload__dropzone:focus-visible {
+  border-color: var(--brand-primary);
+}
+.video-upload__dropzone--drag {
+  border-color: var(--brand-primary);
+  background: var(--color-pepper-50);
+}
+.video-upload__dropzone--busy { cursor: progress; }
+
+.video-upload__prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  color: var(--text-muted);
+  text-align: center;
+  pointer-events: none;
+}
+.video-upload__prompt-icon { font-size: var(--text-2xl); line-height: 1; }
+.video-upload__prompt-label { font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); }
+.video-upload__prompt-hint { font-size: var(--text-xs); }
+/* The 20-30s / file-size note gets its own line, slightly dimmer than the
+   main hint, so it reads as a secondary caveat rather than competing with it. */
+.video-upload__prompt-note { font-size: var(--text-xs); color: var(--text-muted); opacity: 0.85; }
+
+.video-upload__preview {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  max-height: 320px;
+  object-fit: contain;
+  background: var(--color-black, #000);
+  display: block;
+}
+
+.video-upload__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.25);
+}
+.video-upload__progress > div {
+  height: 100%;
+  width: 0%;
+  background: var(--brand-primary);
+  transition: width var(--duration-fast) var(--ease-out);
+}
+
+.video-upload__remove {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(26, 21, 18, 0.55);
+  color: var(--color-white);
+  border: none;
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+  z-index: 1;
+}
+.video-upload__remove:hover { background: rgba(26, 21, 18, 0.75); }
+
+@media (max-width: 640px) {
+  .video-upload__dropzone { min-height: 130px; }
+  .video-upload__preview { min-height: 130px; }
+}

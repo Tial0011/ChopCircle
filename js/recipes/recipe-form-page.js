@@ -8,6 +8,7 @@ import { registerServiceWorker, initInstallPrompt } from "../utils/pwa.js";
 import { isNonEmpty } from "../utils/validation.js";
 import { requireAuth } from "../auth/authGuard.js";
 import { initImageUploadField } from "../utils/imageUpload.js";
+import { initVideoUploadField } from "../utils/videoUpload.js";
 import { CATEGORIES, getRecipe, createRecipe, updateRecipe } from "./recipeService.js";
 
 const form = $("#recipe-form");
@@ -20,6 +21,7 @@ const editId = new URLSearchParams(window.location.search).get("id");
 let rowSeq = 0;
 const nextRowId = () => `row${++rowSeq}`;
 let coverUpload = null; // set in init(), once we have the signed-in user's uid
+let videoUpload = null; // ditto — the optional 20-30s cook-along clip
 
 function populateCategories() {
   categorySelect.innerHTML = CATEGORIES.map((c) => `<option value="${c.slug}">${c.name}</option>`).join("");
@@ -102,6 +104,7 @@ async function loadForEdit(uid) {
   $("#title").value = recipe.title;
   $("#description").value = recipe.description;
   coverUpload.setInitial(recipe.coverImageURL);
+  videoUpload.setInitial(recipe.videoURL);
   categorySelect.value = recipe.category;
   $("#difficulty").value = recipe.difficulty;
   $("#cookTimeMinutes").value = recipe.cookTimeMinutes;
@@ -141,6 +144,11 @@ async function init() {
     onChange: () => setError("coverImageURL", ""),
   });
 
+  videoUpload = initVideoUploadField($("#video-upload"), {
+    uid: user.uid,
+    onChange: () => setError("video", ""),
+  });
+
   if (editId) {
     await loadForEdit(user.uid);
   } else {
@@ -156,16 +164,20 @@ async function init() {
 
     setLoading(submitBtn, true, "Uploading photo…");
     try {
-      await coverUpload.waitForUpload(); // let any in-flight cover upload finish before we read its URL
+      // Let any in-flight cover/video uploads finish before we read their
+      // URLs. Awaited together (not one after the other) so a slow video
+      // upload doesn't sit blocked behind an already-finished photo one.
+      await Promise.all([coverUpload.waitForUpload(), videoUpload.waitForUpload()]);
     } catch {
       setLoading(submitBtn, false);
-      return; // imageUpload.js already surfaced the error on the field itself
+      return; // imageUpload.js/videoUpload.js already surfaced the error on the relevant field
     }
 
     const data = {
       title: $("#title").value.trim(),
       description: $("#description").value.trim(),
       coverImageURL: coverUpload.getURL() || "",
+      videoURL: videoUpload.getURL() || null,
       category: categorySelect.value,
       difficulty: $("#difficulty").value,
       cookTimeMinutes: Number($("#cookTimeMinutes").value),

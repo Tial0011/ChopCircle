@@ -113,6 +113,11 @@ async function init() {
   document.title = `${recipe.title} — ChopCircle`;
   $("#detail-cover").src = recipe.coverImageURL;
   $("#detail-cover").alt = recipe.title;
+  const videoEl = $("#detail-video");
+  if (recipe.videoURL) {
+    videoEl.src = recipe.videoURL;
+    videoEl.classList.remove("hidden");
+  }
   $("#detail-category").textContent = categoryName(recipe.category);
   $("#detail-title").textContent = recipe.title;
   $("#detail-description").textContent = recipe.description;

@@ -117,6 +117,25 @@
             <div class="field__error" id="coverImageURL-error" role="alert"></div>
           </div>
 
+          <div class="field">
+            <label id="video-label">Cook-along video <span class="text-muted text-sm">(optional)</span></label>
+            <div class="video-upload" id="video-upload">
+              <input type="file" accept="video/mp4,video/webm,video/quicktime" hidden aria-labelledby="video-label" />
+              <div class="video-upload__dropzone" tabindex="0" role="button" aria-label="Choose a cook-along video">
+                <video class="video-upload__preview hidden" muted playsinline controls></video>
+                <div class="video-upload__prompt">
+                  <span class="video-upload__prompt-icon" aria-hidden="true">🎬</span>
+                  <span class="video-upload__prompt-label">Add a short cook-along clip</span>
+                  <span class="video-upload__prompt-hint">Click or drag an MP4, WebM, or MOV — up to 25MB</span>
+                  <span class="video-upload__prompt-note">Keep it to about 20-30 seconds — fast-forward or edit the footage down before uploading, not a full-length raw recording.</span>
+                </div>
+                <div class="video-upload__progress hidden"><div></div></div>
+              </div>
+              <button type="button" class="video-upload__remove hidden" aria-label="Remove video">✕</button>
+            </div>
+            <div class="field__error" id="video-error" role="alert"></div>
+          </div>
+
           <div class="recipe-form__row">
             <div class="field">
               <label for="category">Category</label>

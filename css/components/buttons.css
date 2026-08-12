@@ -14,6 +14,13 @@
               background-color var(--duration-fast) var(--ease-out);
 }
 .btn:active { transform: scale(0.97); }
+/* The JS pagination controllers (recipes-page.js, feed-page.js,
+   profile-page.js) toggle these "Load more" buttons via the `hidden`
+   attribute, but `.btn`'s `display: inline-flex` above has the same
+   specificity as the browser's default `[hidden] { display: none }`
+   rule and — being an author style — wins, so the buttons stayed
+   visible even when JS set `hidden = true`. This restores `hidden`. */
+.btn[hidden] { display: none; }
 
 .btn--primary {
   background: var(--brand-primary);
