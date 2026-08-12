@@ -249,26 +249,30 @@ export function initPostCard(cardEl, post, currentUser, onNeedsAuth) {
     if (!commentsPanel.classList.contains("hidden")) ensureCommentsListening();
   });
 
-  commentForm.addEventListener("submit", async (event) => {
+  commentForm.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!currentUser) return onNeedsAuth();
     const input = commentForm.querySelector("input");
     const text = input.value.trim();
     if (!text) return;
     ensureCommentsListening(); // covers submitting before ever opening the panel
-    input.disabled = true;
-    try {
-      await addComment("post", post.id, currentUser.uid, text);
-      input.value = "";
-      // No manual DOM insert needed — addComment() writes via a plain
-      // (non-transaction) updateDoc()/addDoc(), which DOES get Firestore's
-      // local-cache echo, so the listenComments() listener above already
-      // renders it instantly.
-    } catch (error) {
+
+    // Cleared synchronously, before the await below — addComment()'s cache
+    // echo already lands the comment in the list near-instantly (see the
+    // note this replaced), but leaving the input full of the just-sent
+    // text (previously only cleared/re-enabled AFTER the round trip)
+    // visually contradicted that: it read as "still sending" for a beat
+    // even though the comment had already appeared above it. Clearing here
+    // instead — matching chat-page.js's message input — also means a
+    // same-tick double-submit reads an empty field and bails on the
+    // `!text` guard above, so no separate disable-the-input step is needed
+    // to prevent a duplicate.
+    input.value = "";
+
+    addComment("post", post.id, currentUser.uid, text).catch((error) => {
       console.error("Failed to add comment:", error);
-    } finally {
-      input.disabled = false;
-    }
+      input.value = text; // give the text back so it isn't lost
+    });
   });
 
   return function cleanup() {

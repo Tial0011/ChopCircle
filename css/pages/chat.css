@@ -161,6 +161,15 @@ button.chat-list__item:hover, button.chat-list__item[aria-current="true"] { back
   text-align: right;
 }
 
+/* Optimistic send states (chat-page.js's pendingMessages) — the bubble
+   itself never waits to appear, these just distinguish "still going" from
+   "didn't make it" once it's already on screen. */
+.message--pending .message__bubble { opacity: 0.6; }
+.message--failed .message__bubble { opacity: 0.75; }
+.message--failed { cursor: pointer; }
+.message--failed .message__meta { color: var(--color-error); }
+.message--failed .message__meta:hover { text-decoration: underline; }
+
 .message-composer {
   display: flex;
   gap: var(--space-3);

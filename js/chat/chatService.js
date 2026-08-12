@@ -139,6 +139,11 @@ export async function loadOlderMessages(chatId, beforeMessage) {
  * @param {string} senderId
  * @param {string|null} text
  * @param {{ imageURL?: string, audioURL?: string, audioDurationSec?: number }} [media]
+ * @param {string} [clientId] Caller-generated id (see chat-page.js's optimistic
+ * bubble) written onto the doc as-is so the UI can match this message
+ * against the local placeholder it painted before this write even started,
+ * without guessing off of text+timestamp. Optional — non-chat-page callers
+ * that don't render an optimistic bubble can omit it.
  *
  * Also raises a "message" notification (Phase 13) for the other
  * participant, same "after the write, using data the write itself just
@@ -148,7 +153,7 @@ export async function loadOlderMessages(chatId, beforeMessage) {
  * matching how every like/comment/repost already raises one regardless of
  * whether the recipient has that page open.
  */
-export async function sendMessage(chatId, senderId, text, media = {}) {
+export async function sendMessage(chatId, senderId, text, media = {}, clientId = null) {
   const { imageURL = null, audioURL = null, audioDurationSec = null } = media;
   const preview = text || (imageURL ? "📷 Photo" : audioURL ? "🎤 Voice note" : "");
 
@@ -159,6 +164,7 @@ export async function sendMessage(chatId, senderId, text, media = {}) {
     audioURL,
     audioDurationSec,
     status: "sent",
+    clientId,
     createdAt: serverTimestamp(),
   });
 

@@ -53,8 +53,22 @@ let olderMessages = [];
 let hasMoreOlder = true;
 let loadingOlder = false;
 
+// ---- Optimistic send ----
+// A message you just sent shouldn't wait on Firestore's round trip (write +
+// server-timestamp resolution + the onSnapshot re-fetch) to appear — that
+// gap is exactly what was making people tap "send" twice, since nothing on
+// screen changed the first time. Each send paints a local placeholder into
+// pendingMessages immediately; allMessages() folds it in at the bottom and
+// drops it again the instant the real doc — matched by the clientId we
+// stamped it with in chatService.js's sendMessage() — shows up in
+// liveMessages. Content never round-trips through Firestore before the
+// user sees it; the write underneath is what catches up.
+let pendingMessages = [];
+
 function allMessages() {
-  return [...olderMessages, ...liveMessages];
+  const confirmedClientIds = new Set(liveMessages.map((m) => m.clientId).filter(Boolean));
+  const visiblePending = pendingMessages.filter((m) => !confirmedClientIds.has(m.clientId));
+  return [...olderMessages, ...liveMessages, ...visiblePending];
 }
 
 function chatListItemHTML(chat, uid) {
@@ -106,10 +120,19 @@ function messageBubbleContent(message) {
 
 function messageHTML(message, uid) {
   const mine = message.senderId === uid;
-  const tick = mine ? (message.status === "seen" ? "✓✓ Seen" : "✓ Sent") : "";
+  const tick = mine
+    ? message.status === "sending"
+      ? "Sending…"
+      : message.status === "failed"
+      ? "⚠️ Not sent — tap to retry"
+      : message.status === "seen"
+      ? "✓✓ Seen"
+      : "✓ Sent"
+    : "";
   const mediaClass = message.imageURL ? " message__bubble--image" : message.audioURL ? " message__bubble--voice" : "";
+  const stateClass = message.status === "sending" ? " message--pending" : message.status === "failed" ? " message--failed" : "";
   return `
-    <div class="message ${mine ? "message--mine" : "message--theirs"}">
+    <div class="message ${mine ? "message--mine" : "message--theirs"}${stateClass}" ${message.status === "failed" ? `data-retry-id="${message.id}"` : ""}>
       <div>
         <div class="message__bubble${mediaClass}">${messageBubbleContent(message)}</div>
         <span class="message__meta">${relativeTime(message.createdAt)}${tick ? " · " + tick : ""}</span>
@@ -157,6 +180,46 @@ function renderMessages(messages) {
   markThreadSeen(openChatId, currentUser.uid, messages).catch((error) => console.error("Failed to mark seen:", error));
 }
 
+// Paints a text message locally the instant it's submitted, then fires the
+// real write in the background. See the pendingMessages comment above for
+// why: the placeholder IS the "message sent" feedback — sendMessage()'s
+// promise settling is not something the person needs to wait on or see.
+function sendTextMessage(chatId, text) {
+  const clientId = `local-${currentUser.uid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const pending = {
+    id: clientId,
+    clientId,
+    senderId: currentUser.uid,
+    text,
+    imageURL: null,
+    audioURL: null,
+    status: "sending",
+    createdAt: new Date(),
+  };
+  pendingMessages.push(pending);
+  renderMessageList();
+  dispatchMessage(chatId, pending);
+}
+
+// The actual Firestore write for a pending bubble (first attempt or retry).
+// On failure the bubble flips to "failed" in place — the text isn't lost,
+// and the meta line becomes a tap target (see the messageList click
+// handler in init()) instead of silently reverting to the input box, which
+// would just recreate the "did that go through?" doubt this whole thing is
+// meant to remove.
+async function dispatchMessage(chatId, pending) {
+  try {
+    await sendMessage(chatId, pending.senderId, pending.text, {}, pending.clientId);
+    // No manual status flip to "sent" here — once the real doc lands in
+    // liveMessages, allMessages() drops this placeholder entirely in favor
+    // of it (which already carries status: "sent" from chatService.js).
+  } catch (error) {
+    console.error("Failed to send message:", error);
+    pending.status = "failed";
+    renderMessageList();
+  }
+}
+
 // Fired on scroll; pages in the next batch of history once the user nears
 // the top of what's currently loaded. Previously there was no code path
 // to fetch anything older than listenMessages()'s live 50, so a thread
@@ -192,6 +255,7 @@ function openChat(chatId, peerHint) {
   messageList.dataset.firstRender = "false";
   liveMessages = [];
   olderMessages = [];
+  pendingMessages = [];
   hasMoreOlder = true;
   loadingOlder = false;
   unsubscribeMessages?.();
@@ -243,17 +307,29 @@ async function init() {
     if (messageList.scrollTop < 80) loadOlderBatch();
   });
 
-  messageForm.addEventListener("submit", async (event) => {
+  messageForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const text = messageInput.value.trim();
     if (!text || !openChatId) return;
+    // Cleared synchronously, before anything async — a second submit fired
+    // in the same instant (double-tap/double-enter) reads an empty field
+    // and bails on the `!text` guard above, so this alone rules out an
+    // actual duplicate write reaching Firestore.
     messageInput.value = "";
-    try {
-      await sendMessage(openChatId, currentUser.uid, text);
-    } catch (error) {
-      console.error("Failed to send message:", error);
-      messageInput.value = text;
-    }
+    sendTextMessage(openChatId, text);
+  });
+
+  // Tapping a failed bubble resends the same text under the same clientId,
+  // so the retry replaces the failed placeholder rather than stacking a
+  // second one next to it.
+  messageList.addEventListener("click", (event) => {
+    const failed = event.target.closest("[data-retry-id]");
+    if (!failed || !openChatId) return;
+    const pending = pendingMessages.find((m) => m.id === failed.dataset.retryId);
+    if (!pending) return;
+    pending.status = "sending";
+    renderMessageList();
+    dispatchMessage(openChatId, pending);
   });
 
   // ---- Image messages ----
