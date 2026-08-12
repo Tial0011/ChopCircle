@@ -65,6 +65,16 @@ button.chat-list__item:hover, button.chat-list__item[aria-current="true"] { back
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0; /* Without this, this grid item's automatic minimum
+    height defaults to its CONTENT's size (header + every message bubble
+    + composer), not its grid cell's size — .chat-sidebar avoids this
+    because it sets overflow-y:auto on ITSELF, which the spec uses to
+    zero out that automatic minimum, but here only the descendant
+    .message-list has overflow set, which doesn't count for .chat-thread
+    itself. Past a certain message count/wrap-height, that let this whole
+    column outgrow its 100%-height box and get silently clipped by
+    .chat-page's overflow:hidden — composer and newest messages included,
+    with no scrollbar anywhere to reach them. This is the root cause. */
   min-width: 0;
 }
 #chat-thread-empty { align-items: center; justify-content: center; }
