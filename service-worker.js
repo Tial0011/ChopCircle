@@ -18,7 +18,7 @@
 // pages/notifications.html, all live via onSnapshot) work with none of
 // that and remain the source of truth either way.
 
-const CACHE_VERSION = "chopcircle-v2";
+const CACHE_VERSION = "chopcircle-v3";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const OFFLINE_URL = "pages/offline.html";
