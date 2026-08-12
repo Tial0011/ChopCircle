@@ -1,18 +1,37 @@
 /* ==========================================================================
    ChopCircle — Food Shorts (coming soon)
-   A dark, full-bleed "shorts" viewer shell: scrollable category pills up
-   top, centered empty state below. Intentionally forced-dark (like a video
-   player) regardless of the site-wide light/dark toggle, to match the
-   reference short-video app layout.
+   Looks like a video is already playing full-bleed behind the UI (a still
+   food shot standing in for the video frame), with a dark scrim for
+   contrast, scrollable category pills up top, and a small frosted-glass
+   "Coming soon" badge centered on the screen.
    ========================================================================== */
 
 .shorts-view {
+  position: relative;
   min-height: calc(100vh - 72px);
-  background: #0B0B0B;
+  overflow: hidden;
   color: #F5F3F0;
-  padding: var(--space-5) var(--space-4) var(--space-8);
   display: flex;
   flex-direction: column;
+  isolation: isolate;
+}
+
+.shorts-view__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: -2;
+}
+
+.shorts-view__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.15) 22%, rgba(0, 0, 0, 0.35) 65%, rgba(0, 0, 0, 0.75) 100%);
 }
 
 /* ---- Category filter pills ---------------------------------------- */
@@ -21,7 +40,7 @@
   display: flex;
   gap: var(--space-3);
   overflow-x: auto;
-  padding-bottom: var(--space-2);
+  padding: var(--space-5) var(--space-4) var(--space-2);
   scrollbar-width: none;
 }
 
@@ -31,9 +50,11 @@
   flex: 0 0 auto;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-pill, 999px);
-  background: #1C1C1C;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #D8D3CC;
+  background: rgba(20, 20, 20, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #E8E4DE;
   font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
@@ -51,40 +72,47 @@
   color: var(--text-on-brand, #fff);
 }
 
-/* ---- Empty state ----------------------------------------------------- */
+/* ---- Centered "Coming soon" badge ------------------------------------ */
 
-.shorts-view__empty {
+.shorts-view__center {
   flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
   padding: var(--space-6) var(--space-4);
+}
+
+.shorts-view__badge {
+  display: inline-flex;
+  align-items: center;
   gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(20, 20, 20, 0.4);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
-.shorts-view__empty-icon {
-  font-size: 3rem;
-  margin-bottom: var(--space-3);
-  filter: grayscale(0.15);
+.shorts-view__badge-icon {
+  font-size: 1.1rem;
+  line-height: 1;
 }
 
-.shorts-view__empty h1 {
+.shorts-view__badge-text {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: #FFFFFF;
-  font-size: var(--text-xl, 1.25rem);
-  margin: 0;
 }
 
-.shorts-view__empty-sub {
-  color: #8C877F;
-  margin: 0 0 var(--space-4);
-}
+/* ---- Bottom CTA -------------------------------------------------- */
 
-.shorts-view__empty-copy {
-  color: #B8B2A8;
-  max-width: 40ch;
-  margin: 0 0 var(--space-5);
+.shorts-view__footer-cta {
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-4) var(--space-6);
 }
 
 .shorts-view .btn--primary {

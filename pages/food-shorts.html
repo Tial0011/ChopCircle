@@ -98,6 +98,14 @@
 
   <main id="main">
     <section class="shorts-view">
+      <img
+        class="shorts-view__bg"
+        src="../assets/food/jollof-plantain-chicken.jpg"
+        alt=""
+        aria-hidden="true"
+      />
+      <div class="shorts-view__scrim" aria-hidden="true"></div>
+
       <div class="shorts-view__filters" role="list" aria-label="Video categories">
         <button class="shorts-view__chip" aria-pressed="true" role="listitem">All</button>
         <button class="shorts-view__chip" role="listitem">🥘 Local Dishes</button>
@@ -106,11 +114,14 @@
         <button class="shorts-view__chip" role="listitem">🍢 Swallow</button>
       </div>
 
-      <div class="shorts-view__empty">
-        <span class="shorts-view__empty-icon" aria-hidden="true">🎬</span>
-        <h1>No videos in this channel yet</h1>
-        <p class="shorts-view__empty-sub">Check back soon</p>
-        <p class="shorts-view__empty-copy">Quick, bite-sized Nigerian food videos are on the way — how-tos, kitchen hacks, and street food finds in under 60 seconds.</p>
+      <div class="shorts-view__center">
+        <div class="shorts-view__badge">
+          <span class="shorts-view__badge-icon" aria-hidden="true">🎬</span>
+          <span class="shorts-view__badge-text">Coming soon</span>
+        </div>
+      </div>
+
+      <div class="shorts-view__footer-cta">
         <a class="btn btn--primary" href="../index.html">Back to home</a>
       </div>
     </section>
