@@ -130,7 +130,7 @@ export function initVideoUploadField(root, { uid, initialURL = null, onChange } 
   const progressWrap = root.querySelector(".video-upload__progress");
   const progressBar = progressWrap ? progressWrap.firstElementChild : null;
   const removeBtn = root.querySelector(".video-upload__remove");
-  const errorEl = root.querySelector(".field__error");
+  const errorEl = root.closest(".field")?.querySelector(".field__error") || root.querySelector(".field__error");
 
   let currentURL = initialURL || null;
   let uploadPromise = Promise.resolve();
