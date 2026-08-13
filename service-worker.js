@@ -18,7 +18,7 @@
 // pages/notifications.html, all live via onSnapshot) work with none of
 // that and remain the source of truth either way.
 
-const CACHE_VERSION = "chopcircle-v3";
+const CACHE_VERSION = "chopcircle-v4";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const OFFLINE_URL = "pages/offline.html";
@@ -106,7 +106,15 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       (async () => {
         try {
-          const response = await fetch(request);
+          // `cache: "no-store"` here (and in the static-asset branch below)
+          // is the actual fix for "I have to hard-refresh every time":
+          // without it, this fetch() can itself be silently answered by the
+          // BROWSER's own HTTP cache instead of genuinely hitting the
+          // network — meaning the "revalidate" step was sometimes just
+          // revalidating against the same stale response, so a normal
+          // reload never picked up a new deploy. Only a hard refresh
+          // (which bypasses HTTP cache) ever showed the real update.
+          const response = await fetch(request, { cache: "no-store" });
           const cache = await caches.open(RUNTIME_CACHE);
           cache.put(request, response.clone());
           return response;
@@ -124,7 +132,7 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     (async () => {
       const cached = await caches.match(request);
-      const network = fetch(request)
+      const network = fetch(request, { cache: "no-store" })
         .then(async (response) => {
           if (response && response.ok) {
             const cache = await caches.open(RUNTIME_CACHE);
