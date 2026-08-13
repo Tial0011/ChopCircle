@@ -31,7 +31,7 @@ const FOLLOWS = "follows";
 const RECIPES = "recipes";
 const POSTS = "posts";
 const COMMENTS = "comments";
-export const PAGE_SIZE = 12;
+export const PAGE_SIZE = 7;
 
 /** @returns {Promise<object|null>} the user's profile (with `id`), or null if it doesn't exist. */
 export async function getProfile(uid) {

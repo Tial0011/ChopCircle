@@ -27,7 +27,7 @@ import { createNotification } from "../notifications/notificationService.js";
 const RECIPES = "recipes";
 const USERS = "users";
 const LIKES = "likes";
-export const PAGE_SIZE = 12;
+export const PAGE_SIZE = 7;
 
 /** Categories seeded per PLANNING.md / the home page chip row. Keeping this
  * list here (rather than a live `categories` read) until Phase 6 seeds the
