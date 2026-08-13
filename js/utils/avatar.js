@@ -7,6 +7,8 @@
 // picture set. Previously several files fell back to a different
 // i.pravatar.cc-generated fake photo per user id — replaced everywhere
 // with this one shared icon so "no photo" actually looks like no photo.
+import { thumbnailURL } from "./thumbnail.js";
+
 const SILHOUETTE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
   <circle cx="48" cy="48" r="48" fill="#dde3e9"/>
   <circle cx="48" cy="38" r="18" fill="#a7b0ba"/>
@@ -15,7 +17,11 @@ const SILHOUETTE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 
 
 export const DEFAULT_AVATAR = "data:image/svg+xml;utf8," + encodeURIComponent(SILHOUETTE_SVG);
 
-/** Returns `photoURL` if the user has one, else the shared silhouette placeholder. */
+/** Returns `photoURL`'s thumbnail if the user has one, else the shared
+ * silhouette placeholder. Avatars only ever render small (header, comment
+ * rows, post headers) — same reasoning as recipeCard.js/postCard.js, see
+ * functions/index.js's generateThumbnail(). */
 export function avatarSrc(photoURL) {
-  return photoURL || DEFAULT_AVATAR;
+  if (!photoURL) return DEFAULT_AVATAR;
+  return thumbnailURL(photoURL) || photoURL;
 }

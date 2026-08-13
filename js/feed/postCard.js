@@ -24,6 +24,7 @@ import { $ } from "../utils/dom.js";
 import { stripHtml } from "../utils/validation.js";
 import { relativeTime } from "../utils/format.js";
 import { avatarSrc } from "../utils/avatar.js";
+import { thumbnailURL } from "../utils/thumbnail.js";
 import {
   toggleLikePost,
   addComment,
@@ -48,7 +49,7 @@ function commentHTML(comment) {
 function sharedPostHTML(sharedPost) {
   if (!sharedPost) return `<p class="text-muted text-sm">This post is no longer available.</p>`;
   const media = sharedPost.imageURLs?.[0]
-    ? `<div class="post-card__media"><img src="${sharedPost.imageURLs[0]}" alt="" loading="lazy" /></div>`
+    ? `<div class="post-card__media"><img src="${thumbnailURL(sharedPost.imageURLs[0]) || sharedPost.imageURLs[0]}" alt="" loading="lazy" /></div>`
     : "";
   return `
     <div class="post-card__shared">
@@ -72,7 +73,7 @@ function sharedPostHTML(sharedPost) {
 export function postCardHTML(post) {
   const isRepost = Boolean(post.sharedPostId);
   const media = !isRepost && post.imageURLs?.[0]
-    ? `<div class="post-card__media"><img src="${post.imageURLs[0]}" alt="" loading="lazy" /></div>`
+    ? `<div class="post-card__media"><img src="${thumbnailURL(post.imageURLs[0]) || post.imageURLs[0]}" alt="" loading="lazy" /></div>`
     : "";
   const body = isRepost
     ? `<p class="post-card__repost-label">🔁 <a href="profile.html?id=${post.authorId}">${stripHtml(post.authorName)}</a> reposted</p>${sharedPostHTML(post.sharedPost)}`

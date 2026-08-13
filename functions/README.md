@@ -1,20 +1,29 @@
 # ChopCircle Cloud Functions
 
-Status: **`sendPush` is written and exported (Phase 12 — active once
-deployed). Everything else in `index.js` is written but commented out (not
-exported).** This folder exists so Phase 11+ ("Testing" and beyond) has a
-real place to put backend work that `firebase/firestore-schema.md` and
-`firebase/firestore.rules` already say is coming — most of it isn't part
-of what's shipped client-side-only on purpose (see `HANDOFF.md`).
-`sendPush` is the one exception: it has nothing client-side to conflict
-with (creating the `notifications/{id}` doc stays entirely client-side,
-in `js/notifications/notificationService.js`'s `createNotification()` —
-this function only adds push delivery on top of that write, see its
-comment in `index.js`), so it's safe to deploy without touching any
-`js/*Service.js` file.
+Status: **`sendPush` and `generateThumbnail` are written and exported (both
+active once deployed). Everything else in `index.js` is written but
+commented out (not exported).** This folder exists so Phase 11+ ("Testing"
+and beyond) has a real place to put backend work that
+`firebase/firestore-schema.md` and `firebase/firestore.rules` already say is
+coming — most of it isn't part of what's shipped client-side-only on
+purpose (see `HANDOFF.md`). `sendPush` and `generateThumbnail` are the two
+exceptions: neither has anything client-side to conflict with (see each
+one's own comment in `index.js` for why), so both are safe to deploy
+without touching any `js/*Service.js` file.
 
 ## What's in `index.js`
 
+- **`generateThumbnail` (active)** — on every image uploaded to
+  `users/`, `recipes/`, or `posts/`, generates a ~720px-wide JPEG copy
+  named `thumb_<originalFileName>` next to the original. Cards/grids
+  (`recipeCard.js`, `postCard.js`, avatars, `render-creators.js`,
+  `render-trending.js`) request that thumbnail instead of the up-to-8MB
+  original via `js/utils/thumbnail.js`'s `thumbnailURL()`/`avatarSrc()`,
+  with a client-side fallback to the original if the thumbnail 404s (the
+  brief window right after upload before this function has run, or if it
+  ever fails outright). This is the main lever on Storage bandwidth cost —
+  see `HANDOFF.md` for the before/after numbers. Needs `sharp` (already in
+  `package.json`) — no extra console setup beyond Blaze (below).
 - **`sendPush` (Phase 12, active)** — sends a real FCM push whenever a
   `notifications/{id}` doc is created, to every token in that recipient's
   `users/{uid}.fcmTokens` (saved client-side by `js/notifications/push.js`'s

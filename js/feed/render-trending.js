@@ -4,6 +4,7 @@
 // duplicating recipe-fetching logic in js/feed.
 import { $ } from "../utils/dom.js";
 import { listRecipes } from "../recipes/recipeService.js";
+import { thumbnailURL } from "../utils/thumbnail.js";
 
 const grid = $("#trending-recipes");
 
@@ -13,11 +14,12 @@ const grid = $("#trending-recipes");
 // grid would mean one extra read per recipe. The save button is decorative
 // for now (saving isn't wired up yet — see savedCollections in the schema).
 function recipeCardHTML(recipe) {
+  const thumb = thumbnailURL(recipe.coverImageURL) || recipe.coverImageURL;
   return `
     <article class="card recipe-card">
       <a href="pages/recipe-details.html?id=${recipe.id}" class="recipe-card__link">
         <div class="recipe-card__media">
-          <img src="${recipe.coverImageURL}" alt="${recipe.title}" loading="lazy" />
+          <img src="${thumb}" onerror="this.onerror=null;this.src='${recipe.coverImageURL}'" alt="${recipe.title}" loading="lazy" />
           <button class="recipe-card__save" aria-label="Save recipe">🤍</button>
         </div>
         <div class="recipe-card__body">
