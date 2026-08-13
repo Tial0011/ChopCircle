@@ -98,6 +98,16 @@
 
   <main id="main">
     <section class="shorts-view">
+      <div class="shorts-view__permission" id="shorts-permission" role="dialog" aria-modal="true" aria-label="Enable sound">
+        <div class="shorts-view__permission-card">
+          <span class="shorts-view__permission-icon" aria-hidden="true">🔊</span>
+          <p class="shorts-view__permission-title">Turn on sound?</p>
+          <p class="shorts-view__permission-text">Food Shorts are best experienced with audio.</p>
+          <button class="btn btn--primary" id="shorts-permission-allow" type="button">Enable sound</button>
+          <button class="shorts-view__permission-skip" id="shorts-permission-skip" type="button">Not now</button>
+        </div>
+      </div>
+
       <div class="shorts-view__filters" role="list" aria-label="Video categories">
         <button class="shorts-view__chip" aria-pressed="true" role="listitem">All</button>
         <button class="shorts-view__chip" role="listitem">🥘 Local Dishes</button>
