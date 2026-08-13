@@ -14,6 +14,11 @@
 }
 .field input:focus, .field textarea:focus { border-color: var(--brand-primary); }
 .field input[aria-invalid="true"] { border-color: var(--color-error); }
+/* Same invalid-state color, but not scoped to `.field` — dynamic rows
+   (ingredient amount/unit inputs in recipe-form.html) live inside a plain
+   <fieldset>, not a `.field` wrapper, since each row needs its own
+   remove button rather than the usual single-input layout. */
+input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--color-error); }
 
 .field__error {
   font-size: var(--text-xs);

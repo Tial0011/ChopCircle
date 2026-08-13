@@ -17,6 +17,40 @@ export function isNonEmpty(value) {
 }
 
 /**
+ * Stricter than a plain `Number(value)`/`|| 0` fallback: rejects anything
+ * that isn't a single finite number greater than 0 — including a range
+ * like "5-7". Matters specifically for `<input type="number">` fields:
+ * per spec, typing something the browser can't parse as one number (a
+ * range, stray letters, etc.) leaves `.value` as an EMPTY STRING while
+ * still showing what was typed on screen — so `Number(el.value)` silently
+ * becomes `Number("")`, which is `0`, not an error. A plain `!amount`
+ * check catches that 0, but gives no reason why; this is meant to be
+ * paired with elementHasBadInput() below for the "why" (a badInput input
+ * still visually holds "5-7" even though `.value` reads "").
+ * @param {string|number} value
+ * @returns {number|null} the parsed number, or null if it's not usable
+ */
+export function parsePositiveNumber(value) {
+  if (value === null || value === undefined) return null;
+  const str = String(value).trim();
+  if (!str) return null;
+  const num = Number(str);
+  return Number.isFinite(num) && num > 0 ? num : null;
+}
+
+/**
+ * True if a number input currently holds text the browser couldn't parse
+ * as a number at all (e.g. "5-7", "abc") — as opposed to just being
+ * empty. Distinguishes "you typed something, but it wasn't one valid
+ * number" from "you didn't fill this in", so the error message can say
+ * which one actually happened instead of a generic "required" for both.
+ * @param {HTMLInputElement} input
+ */
+export function elementHasBadInput(input) {
+  return Boolean(input && input.validity && input.validity.badInput);
+}
+
+/**
  * Basic sanitizer for any user-generated text rendered back into the DOM
  * via innerHTML (captions, comments, bios). Strips tags entirely — this
  * app renders user text as plain text via textContent wherever possible;

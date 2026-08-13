@@ -94,7 +94,17 @@
 }
 .video-upload__remove:hover { background: rgba(26, 21, 18, 0.75); }
 
+/* ---- Compact/form variant — matches image-upload--cover's 120px so the
+   video field under the cover photo in recipe-form.html doesn't read as a
+   heavier, more prominent block than the (required) photo above it. ---- */
+.video-upload--compact .video-upload__dropzone { min-height: 120px; }
+.video-upload--compact .video-upload__preview { min-height: 120px; max-height: 240px; }
+.video-upload--compact .video-upload__prompt { padding: var(--space-4); gap: var(--space-1); }
+.video-upload--compact .video-upload__prompt-icon { font-size: var(--text-xl); }
+
 @media (max-width: 640px) {
   .video-upload__dropzone { min-height: 130px; }
   .video-upload__preview { min-height: 130px; }
+  .video-upload--compact .video-upload__dropzone,
+  .video-upload--compact .video-upload__preview { min-height: 110px; }
 }
