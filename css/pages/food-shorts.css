@@ -16,14 +16,79 @@
   isolation: isolate;
 }
 
-.shorts-view__bg {
+/* ---- Vertical swipe reel ------------------------------------------- */
+
+.shorts-view__reel {
+  height: calc(100vh - 72px);
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.shorts-view__reel::-webkit-scrollbar { display: none; }
+
+.shorts-view__slide {
+  position: relative;
+  height: calc(100vh - 72px);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  isolation: isolate;
+}
+
+.shorts-view__video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
+  background: #111;
   z-index: -2;
+}
+
+.shorts-view__mute-btn {
+  position: absolute;
+  top: var(--space-5);
+  right: var(--space-4);
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(20, 20, 20, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.shorts-view__info {
+  position: relative;
+  z-index: 2;
+  padding: 0 var(--space-4) var(--space-6);
+}
+
+.shorts-view__title {
+  font-weight: 700;
+  font-size: var(--text-lg, 1.1rem);
+  margin: 0 0 4px;
+}
+
+.shorts-view__caption {
+  font-size: var(--text-sm);
+  color: #E8E4DE;
+  margin: 0;
+}
+
+.shorts-view__slide--soon {
+  justify-content: center;
+  align-items: center;
+  background: var(--brand-primary, #E8542A);
 }
 
 .shorts-view__scrim {
@@ -37,6 +102,11 @@
 /* ---- Category filter pills ---------------------------------------- */
 
 .shorts-view__filters {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
   display: flex;
   gap: var(--space-3);
   overflow-x: auto;
@@ -75,10 +145,13 @@
 /* ---- Centered "Coming soon" badge ------------------------------------ */
 
 .shorts-view__center {
-  flex: 1;
+  position: relative;
+  z-index: 2;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--space-5);
   padding: var(--space-6) var(--space-4);
 }
 
@@ -112,7 +185,6 @@
 .shorts-view__footer-cta {
   display: flex;
   justify-content: center;
-  padding: 0 var(--space-4) var(--space-6);
 }
 
 .shorts-view .btn--primary {

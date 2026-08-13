@@ -98,14 +98,6 @@
 
   <main id="main">
     <section class="shorts-view">
-      <img
-        class="shorts-view__bg"
-        src="../assets/food/jollof-plantain-chicken.jpg"
-        alt=""
-        aria-hidden="true"
-      />
-      <div class="shorts-view__scrim" aria-hidden="true"></div>
-
       <div class="shorts-view__filters" role="list" aria-label="Video categories">
         <button class="shorts-view__chip" aria-pressed="true" role="listitem">All</button>
         <button class="shorts-view__chip" role="listitem">🥘 Local Dishes</button>
@@ -114,15 +106,78 @@
         <button class="shorts-view__chip" role="listitem">🍢 Swallow</button>
       </div>
 
-      <div class="shorts-view__center">
-        <div class="shorts-view__badge">
-          <span class="shorts-view__badge-icon" aria-hidden="true">🎬</span>
-          <span class="shorts-view__badge-text">Coming soon</span>
-        </div>
-      </div>
+      <div class="shorts-view__reel" id="shorts-reel">
 
-      <div class="shorts-view__footer-cta">
-        <a class="btn btn--primary" href="../index.html">Back to home</a>
+        <!-- Short 1 -->
+        <article class="shorts-view__slide" data-shorts-slide>
+          <video
+            class="shorts-view__video"
+            src="../assets/food/shorts/jollof-rice-short.mp4"
+            poster="../assets/food/jollof-plantain-chicken.jpg"
+            loop
+            muted
+            playsinline
+            preload="metadata"
+          ></video>
+          <div class="shorts-view__scrim" aria-hidden="true"></div>
+          <button class="shorts-view__mute-btn" type="button" aria-label="Toggle sound" data-shorts-mute>🔇</button>
+          <div class="shorts-view__info">
+            <p class="shorts-view__title">Party Jollof Rice</p>
+            <p class="shorts-view__caption">Smoky party jollof in one pot 🔥</p>
+          </div>
+        </article>
+
+        <!-- Short 2 -->
+        <article class="shorts-view__slide" data-shorts-slide>
+          <video
+            class="shorts-view__video"
+            src="../assets/food/shorts/egusi-soup-short.mp4"
+            poster="../assets/food/jollof-plantain-coleslaw.jpg"
+            loop
+            muted
+            playsinline
+            preload="metadata"
+          ></video>
+          <div class="shorts-view__scrim" aria-hidden="true"></div>
+          <button class="shorts-view__mute-btn" type="button" aria-label="Toggle sound" data-shorts-mute>🔇</button>
+          <div class="shorts-view__info">
+            <p class="shorts-view__title">Egusi Soup</p>
+            <p class="shorts-view__caption">Rich egusi, ready in minutes 🥘</p>
+          </div>
+        </article>
+
+        <!-- Short 3 -->
+        <article class="shorts-view__slide" data-shorts-slide>
+          <video
+            class="shorts-view__video"
+            src="../assets/food/shorts/puff-puff-short.mp4"
+            loop
+            muted
+            playsinline
+            preload="metadata"
+          ></video>
+          <div class="shorts-view__scrim" aria-hidden="true"></div>
+          <button class="shorts-view__mute-btn" type="button" aria-label="Toggle sound" data-shorts-mute>🔇</button>
+          <div class="shorts-view__info">
+            <p class="shorts-view__title">Puff-Puff</p>
+            <p class="shorts-view__caption">Crispy outside, soft inside 🍩</p>
+          </div>
+        </article>
+
+        <!-- More videos coming soon -->
+        <article class="shorts-view__slide shorts-view__slide--soon">
+          <div class="shorts-view__scrim" aria-hidden="true"></div>
+          <div class="shorts-view__center">
+            <div class="shorts-view__badge">
+              <span class="shorts-view__badge-icon" aria-hidden="true">🎬</span>
+              <span class="shorts-view__badge-text">More videos coming soon</span>
+            </div>
+            <div class="shorts-view__footer-cta">
+              <a class="btn btn--primary" href="../index.html">Back to home</a>
+            </div>
+          </div>
+        </article>
+
       </div>
     </section>
   </main>
